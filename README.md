@@ -87,18 +87,6 @@ On first launch, SnipDock asks the user to choose a local data directory. User i
 - App logs: `logs\`
 - Local settings: `settings.json`
 
-Do not commit your personal data directory.
-
-## Migration From PromptShelf
-
-SnipDock was previously named PromptShelf. To protect existing users, SnipDock keeps compatibility migration logic:
-
-- Reads the old `%APPDATA%\PromptShelf\bootstrap.json`
-- Migrates to `%APPDATA%\SnipDock\bootstrap.json` when the new config does not exist
-- Does not delete the old PromptShelf configuration
-- Does not move the user-selected data directory
-- Keeps the `prompts.json` file name for compatibility
-
 ## Privacy
 
 - Data is stored locally
