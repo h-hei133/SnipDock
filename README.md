@@ -30,13 +30,12 @@ Command items are copy-only. SnipDock never automatically executes saved command
 - Automatic backups and backup restore
 - Windows startup launch
 - Local JSON safe writes
-- Compatible migration from previous PromptShelf configuration
 
 ## Screenshots
 
-![screenshot 1](./docs/images/截图1.png)
+![screenshot 1](./docs/images/image_1.png)
 
-![screenshot 2](./docs/images/截图2.png)
+![screenshot 2](./docs/images/image_2.png)
 
 ## Download and Run
 
@@ -86,16 +85,6 @@ On first launch, SnipDock asks the user to choose a local data directory. User i
 - Automatic backups: `backups\`
 - App logs: `logs\`
 - Local settings: `settings.json`
-
-## Migration From PromptShelf
-
-SnipDock keeps compatibility with the previous PromptShelf bootstrap configuration:
-
-- Reads legacy `%APPDATA%\PromptShelf\bootstrap.json`
-- Migrates bootstrap settings to `%APPDATA%\SnipDock\bootstrap.json`
-- Does not delete legacy configuration
-- Does not move or rename the user-selected data directory
-- Keeps the `prompts.json` filename for compatibility
 
 ## Privacy
 
