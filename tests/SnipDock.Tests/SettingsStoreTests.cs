@@ -4,6 +4,7 @@ using Xunit;
 using SnipDock.Core.Models;
 using SnipDock.Core.Interfaces;
 using SnipDock.Infrastructure.Storage;
+using SnipDock.App.Services;
 
 namespace SnipDock.Tests
 {
@@ -39,7 +40,7 @@ namespace SnipDock.Tests
 
             // Verify default values on non-existent file
             var defaultSettings = store.Load();
-            Assert.Equal("zh-CN", defaultSettings.Language);
+            Assert.Equal(LocalizationService.DetectDefaultLanguage(), defaultSettings.Language);
             Assert.Equal(-1, defaultSettings.WindowLeft);
 
             // Modify values and save
@@ -107,7 +108,8 @@ namespace SnipDock.Tests
             };
             
             var legacyFile = Path.Combine(legacyDir, "bootstrap.json");
-            var legacyJson = "{\n  \"StoragePath\": \"D:\\\\LegacyDataFolder\"\n}";
+            var legacyStoragePath = Path.Combine(_tempDir, "LegacyDataFolder");
+            var legacyJson = $"{{\n  \"StoragePath\": \"{legacyStoragePath.Replace("\\", "\\\\")}\"\n}}";
             File.WriteAllText(legacyFile, legacyJson);
             
             var store = new LocalBootstrapSettingsStore(fakePath);
@@ -116,7 +118,7 @@ namespace SnipDock.Tests
             var settings = store.Load();
             
             // Assert
-            Assert.Equal("D:\\LegacyDataFolder", settings.StoragePath);
+            Assert.Equal(legacyStoragePath, settings.StoragePath);
             
             // Verify new file exists and legacy file still exists
             var newFile = Path.Combine(newDir, "bootstrap.json");

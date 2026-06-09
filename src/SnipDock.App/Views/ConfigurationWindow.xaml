@@ -82,7 +82,7 @@
             <Grid Grid.Row="0" MouseDown="TitleBar_MouseDown" Background="Transparent">
                 <TextBlock Text="SnipDock" Foreground="{DynamicResource AccentColorBrush}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Left" />
                 
-                <Button Content="关闭" Click="Close_Click" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent" BorderThickness="0" HorizontalAlignment="Right" FontSize="14" Cursor="Hand">
+                <Button Content="{Binding CloseText}" Click="Close_Click" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent" BorderThickness="0" HorizontalAlignment="Right" FontSize="14" Cursor="Hand">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -127,7 +127,7 @@
                     </TextBox.Resources>
                 </TextBox>
                 
-                <Button Grid.Column="1" Content="浏览..." Command="{Binding BrowseCommand}" 
+                <Button Grid.Column="1" Content="{Binding BrowseText}" Command="{Binding BrowseCommand}" 
                         Style="{StaticResource ModernSecondaryButtonStyle}" Padding="15,6" Margin="10,0,0,0" />
             </Grid>
 
@@ -138,7 +138,7 @@
                 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <!-- Cancel Button (Only shown in settings modification mode) -->
-                    <Button Content="取消" Command="{Binding CancelCommand}" 
+                    <Button Content="{Binding CancelText}" Command="{Binding CancelCommand}" 
                             Style="{StaticResource ModernSecondaryButtonStyle}" Padding="18,8" Margin="0,0,10,0"
                             Visibility="{Binding IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     

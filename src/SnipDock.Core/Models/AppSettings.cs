@@ -2,7 +2,9 @@ namespace SnipDock.Core.Models
 {
     public class AppSettings
     {
-        public string Language { get; set; } = "zh-CN";
+        public string Language { get; set; } = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("zh", System.StringComparison.OrdinalIgnoreCase)
+            ? "zh-CN"
+            : "en-US";
         public double WindowLeft { get; set; } = -1;
         public double WindowTop { get; set; } = -1;
         public string Theme { get; set; } = "Dark";

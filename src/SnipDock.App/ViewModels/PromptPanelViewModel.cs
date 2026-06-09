@@ -22,6 +22,7 @@ namespace SnipDock.App.ViewModels
         private readonly PromptService _promptService;
         private readonly ThemeService _themeService;
         private readonly IAppSettingsStore _appSettingsStore;
+        private readonly LocalizationService _localizationService = new();
 
         private readonly ShelfImportExportService _importExportService;
         private readonly BackupService _backupService;
@@ -58,6 +59,8 @@ namespace SnipDock.App.ViewModels
         private bool _isSettingsOpen;
         private string _selectedTheme = "Dark";
         private string _selectedAccentColor = "Purple";
+        private string _selectedLanguage = LocalizationService.DetectDefaultLanguage();
+        private LocalizedStrings _loc;
         private bool _isToastVisible;
         private string _toastMessage = string.Empty;
         private bool _isToastSuccess = true;
@@ -81,6 +84,8 @@ namespace SnipDock.App.ViewModels
             _backupService = backupService ?? throw new ArgumentNullException(nameof(backupService));
             _startupLaunchService = startupLaunchService ?? throw new ArgumentNullException(nameof(startupLaunchService));
             _tagManagementService = tagManagementService ?? throw new ArgumentNullException(nameof(tagManagementService));
+            _loc = _localizationService.CreateStrings(_selectedLanguage);
+            RebuildTypeFilters();
 
             SearchCommand = new RelayCommand(async () => await ExecuteSearchAsync());
             AddCommand = new RelayCommand(OnStartAdd);
@@ -92,6 +97,7 @@ namespace SnipDock.App.ViewModels
             ToggleSettingsCommand = new RelayCommand(OnToggleSettings);
             ChangeThemeCommand = new RelayCommand<string>(OnChangeTheme);
             ChangeAccentColorCommand = new RelayCommand<string>(OnChangeAccentColor);
+            ChangeLanguageCommand = new RelayCommand<string>(OnChangeLanguage);
             ChangeStoragePathCommand = new RelayCommand(OnChangeStoragePath);
 
             // Phase 3 Commands
@@ -138,16 +144,13 @@ namespace SnipDock.App.ViewModels
         }
 
         // Phase 3 Filter & Sorting Properties
-        public IReadOnlyList<TypeFilterItem> TypeFilters { get; } = new List<TypeFilterItem>
+        public ObservableCollection<TypeFilterItem> TypeFilters { get; private set; } = new();
+
+        public LocalizedStrings Loc
         {
-            new() { Key = "All", DisplayName = "全部" },
-            new() { Key = "Prompt", DisplayName = "Prompt" },
-            new() { Key = "Command", DisplayName = "命令" },
-            new() { Key = "Snippet", DisplayName = "代码片段" },
-            new() { Key = "Note", DisplayName = "笔记" },
-            new() { Key = "Favorites", DisplayName = "收藏" },
-            new() { Key = "RecentlyUsed", DisplayName = "最近使用" },
-        };
+            get => _loc;
+            private set => SetProperty(ref _loc, value);
+        }
 
         public string SelectedTypeFilter
         {
@@ -363,6 +366,31 @@ namespace SnipDock.App.ViewModels
             set { if (value) SelectedTheme = "Light"; }
         }
 
+        public string SelectedLanguage
+        {
+            get => _selectedLanguage;
+            set
+            {
+                var normalized = LocalizationService.NormalizeLanguage(value);
+                if (SetProperty(ref _selectedLanguage, normalized))
+                {
+                    OnChangeLanguage(normalized);
+                }
+            }
+        }
+
+        public bool IsLanguageChinese
+        {
+            get => SelectedLanguage.Equals("zh-CN", StringComparison.OrdinalIgnoreCase);
+            set { if (value) SelectedLanguage = "zh-CN"; }
+        }
+
+        public bool IsLanguageEnglish
+        {
+            get => SelectedLanguage.Equals("en-US", StringComparison.OrdinalIgnoreCase);
+            set { if (value) SelectedLanguage = "en-US"; }
+        }
+
         public bool IsAccentPurple
         {
             get => SelectedAccentColor.Equals("Purple", StringComparison.OrdinalIgnoreCase);
@@ -438,6 +466,7 @@ namespace SnipDock.App.ViewModels
         public ICommand ToggleSettingsCommand { get; }
         public ICommand ChangeThemeCommand { get; }
         public ICommand ChangeAccentColorCommand { get; }
+        public ICommand ChangeLanguageCommand { get; }
         public ICommand ChangeStoragePathCommand { get; }
 
         // Phase 3 Commands
@@ -622,6 +651,9 @@ namespace SnipDock.App.ViewModels
 
             // Load settings safely without triggering double saves
             var settings = _appSettingsStore.Load();
+            _selectedLanguage = LocalizationService.NormalizeLanguage(settings.Language);
+            Loc = _localizationService.CreateStrings(_selectedLanguage);
+            RebuildTypeFilters();
             _selectedTheme = settings.Theme;
             _selectedAccentColor = settings.AccentColor;
 
@@ -647,6 +679,9 @@ namespace SnipDock.App.ViewModels
             OnPropertyChanged(nameof(ClearSearchAfterCopy));
             OnPropertyChanged(nameof(IsStartupEnabled));
             OnPropertyChanged(nameof(DataSchemaVersion));
+            OnPropertyChanged(nameof(SelectedLanguage));
+            OnPropertyChanged(nameof(IsLanguageChinese));
+            OnPropertyChanged(nameof(IsLanguageEnglish));
             
             await LoadTagSummariesAsync();
             
@@ -1115,6 +1150,39 @@ namespace SnipDock.App.ViewModels
                 NotifyStateProperties();
                 _ = LoadTagSummariesAsync();
             }
+        }
+
+        private void OnChangeLanguage(string? language)
+        {
+            var normalized = LocalizationService.NormalizeLanguage(language);
+            Loc = _localizationService.CreateStrings(normalized);
+            RebuildTypeFilters();
+
+            var settings = _appSettingsStore.Load();
+            if (!settings.Language.Equals(normalized, StringComparison.OrdinalIgnoreCase))
+            {
+                settings.Language = normalized;
+                _appSettingsStore.Save(settings);
+            }
+
+            OnPropertyChanged(nameof(IsLanguageChinese));
+            OnPropertyChanged(nameof(IsLanguageEnglish));
+            NotifyStateProperties();
+        }
+
+        private void RebuildTypeFilters()
+        {
+            TypeFilters = new ObservableCollection<TypeFilterItem>
+            {
+                new() { Key = "All", DisplayName = Loc["All"] },
+                new() { Key = "Prompt", DisplayName = "Prompt" },
+                new() { Key = "Command", DisplayName = Loc["Command"] },
+                new() { Key = "Snippet", DisplayName = Loc["Snippet"] },
+                new() { Key = "Note", DisplayName = Loc["Note"] },
+                new() { Key = "Favorites", DisplayName = Loc["Favorites"] },
+                new() { Key = "RecentlyUsed", DisplayName = Loc["RecentlyUsed"] },
+            };
+            OnPropertyChanged(nameof(TypeFilters));
         }
 
         private void OnChangeTheme(string? theme)
