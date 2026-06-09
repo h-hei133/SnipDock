@@ -1,0 +1,57 @@
+name: Bug report / 缺陷反馈
+description: Report a reproducible problem in SnipDock / 反馈可复现的问题
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈 SnipDock 问题。请不要粘贴真实 Prompt、剪贴板内容、日志隐私信息或本地敏感路径。
+  - type: input
+    id: version
+    attributes:
+      label: SnipDock version / 版本
+      description: 例如 v0.1.0-beta
+      placeholder: v0.1.0-beta
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem summary / 问题概述
+      description: 简要说明发生了什么。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: 请写出可以复现问题的步骤。
+      placeholder: |
+        1. 打开 SnipDock
+        2. 点击 ...
+        3. 看到 ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 预期行为
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior / 实际行为
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version / Windows 版本
+      placeholder: Windows 11 23H2
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context / 其他信息
+      description: 可附截图，但请先遮挡敏感内容。

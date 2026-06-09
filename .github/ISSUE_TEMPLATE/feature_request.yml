@@ -1,0 +1,39 @@
+name: Feature request / 功能建议
+description: Suggest an improvement for SnipDock / 提出改进建议
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢建议。SnipDock 当前定位是 local-first 本地片段管理器，不会自动执行命令。
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 你遇到的问题
+      description: 这个建议想解决什么使用痛点？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal / 建议方案
+      description: 你希望 SnipDock 怎么改进？
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / 替代方案
+      description: 目前有没有临时绕过方式？
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope / 范围
+      options:
+        - UI / 交互
+        - Backup / Import / Export
+        - Search / Filters
+        - Settings
+        - Documentation
+        - Other

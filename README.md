@@ -1,119 +1,129 @@
 # SnipDock
 
-SnipDock is a lightweight local Windows snippet manager for prompts, commands, code snippets, notes, and other reusable text. It is designed for quick save, search, copy, and organization from a floating desktop entry point.
+SnipDock 是一个 Windows 本地轻量片段管理器，用于快速保存、搜索和复制 Prompt、命令、代码片段、笔记和常用信息。
 
-Current release: **v0.1.0-beta**. This is a beta build intended for early public testing.
+当前版本：**v0.1.0-beta**。这是 SnipDock 的首个 beta 版本，适合早期试用和反馈。
 
-## Features
+## 项目定位
 
-- Windows floating ball and system tray entry.
-- Global hotkey to open the management panel.
-- Prompt, command, snippet, and note item types.
-- Search by title and tags only. Item content is not searched.
-- Type filters, tag filters, favorites, pinned items, recent usage, and usage counts.
-- Create, edit, delete, and copy items.
-- Non-blocking toast feedback after copy.
-- Optional auto-hide after copying.
-- Light and dark themes with accent colors.
-- Settings panel.
-- Optional Windows startup launch.
-- Local JSON storage with safe writes.
-- `prompts.json.bak` safety backup plus automatic `backups/` snapshots.
-- JSON import and export.
-- Backup restore.
-- Single-instance protection.
-- Compatibility migration from the previous PromptShelf configuration.
+SnipDock 是一个 **local-first** 的本地优先工具。它不提供云同步，不把用户条目上传到云端，也不是命令执行器。
 
-Command items are copy-only. SnipDock does not execute saved commands.
+命令类条目只用于复制到剪贴板，SnipDock 不会自动运行或执行保存的命令。
 
-## Screenshots
+## 功能特性
 
-Screenshots will be added before the stable release. Suggested screenshots:
+- Prompt / 命令 / 代码片段 / 笔记多类型条目
+- 标题和标签搜索，不搜索正文内容
+- 类型筛选、标签筛选
+- 收藏、置顶、最近使用和使用次数
+- 全局快捷键
+- 系统托盘
+- Windows 悬浮球
+- Light / Dark 主题
+- 多 Accent 配色
+- 新建、编辑、删除、复制
+- 复制后非阻塞 Toast 提示
+- 可选复制后自动隐藏管理面板
+- 导入 / 导出 JSON
+- 自动备份和备份恢复
+- 开机自启
+- 本地 JSON 安全写入
+- 从旧 PromptShelf 配置兼容迁移
 
-- Floating ball on the Windows desktop.
-- Management panel with filters and item details.
-- Settings panel showing theme, storage, backup, and startup options.
+## 截图
 
-## Requirements
+截图文件会后续补充到 `docs/images/` 目录。
 
-- Windows
-- .NET 9 SDK for development
-- Visual Studio 2022 is recommended for WPF development
+![截图1](./docs/images/截图1.png)
 
-## Run
+![截图2](./docs/images/截图2.png)
+
+## 下载和运行
+
+如果你下载的是已发布的 exe 包，可以直接运行：
+
+```text
+SnipDock.App.exe
+```
+
+当前发布命令使用 framework-dependent 方式打包。如果运行环境没有安装 .NET 9 Runtime，请先安装 .NET 9 Desktop Runtime。
+
+## 从源码运行
 
 ```powershell
 dotnet run --project src/SnipDock.App/SnipDock.App.csproj
 ```
 
-## Build
+## 构建
 
 ```powershell
-dotnet restore SnipDock.sln
 dotnet build SnipDock.sln
+```
+
+## 测试
+
+```powershell
 dotnet test SnipDock.sln
 ```
 
-## Publish
+## 发布
 
 ```powershell
 dotnet publish src/SnipDock.App/SnipDock.App.csproj -c Release -r win-x64 --self-contained false -o .\publish\SnipDock
 ```
 
-The publish output is intentionally ignored by Git.
+发布产物目录 `publish/` 已加入 `.gitignore`，不应提交到仓库。
 
-## Data Storage
+## 数据存储位置
 
-On first launch, SnipDock asks the user to choose a local storage directory. SnipDock stores user data in that selected directory:
+SnipDock 首次启动时会引导用户选择一个本地数据目录。用户条目、设置、备份和正式日志都会保存在用户选择的位置。
 
-- `prompts.json`: main item data file.
-- `prompts.json.bak`: safety backup of the previous main data file.
-- `settings.json`: local app settings for the selected data directory.
-- `logs/`: runtime logs.
-- `backups/`: automatic and manual backup snapshots.
+- 引导配置：`%APPDATA%\SnipDock\bootstrap.json`
+- 启动日志：`%LOCALAPPDATA%\SnipDock\logs\`
+- 用户数据：用户选择的数据目录
+- 主数据文件：`prompts.json`
+- 安全备份：`prompts.json.bak`
+- 自动备份目录：`backups\`
+- 正式日志目录：`logs\`
+- 本地设置文件：`settings.json`
 
-Bootstrap configuration is stored at:
+请不要把自己的数据目录提交到 Git 仓库。
 
-```text
-%APPDATA%\SnipDock\bootstrap.json
-```
+## 从 PromptShelf 迁移
 
-User data files, logs, backups, and publish output are excluded by `.gitignore`.
+SnipDock 曾用名为 PromptShelf。为了保护已有用户数据，SnipDock 保留了旧配置兼容迁移逻辑：
 
-## Migration From PromptShelf
+- 会兼容旧 `%APPDATA%\PromptShelf\bootstrap.json`
+- 如果新配置不存在，会迁移到 `%APPDATA%\SnipDock\bootstrap.json`
+- 不删除旧 PromptShelf 配置
+- 不移动用户已选择的数据目录
+- `prompts.json` 文件名暂时保留，以保证兼容
 
-SnipDock was previously named PromptShelf. For compatibility, SnipDock can read the old bootstrap configuration from:
+## 隐私说明
 
-```text
-%APPDATA%\PromptShelf\bootstrap.json
-```
+- 数据只保存在本地
+- 不上传云端
+- 不自动执行命令
+- 命令条目只复制，不运行
+- 日志不应记录条目正文和剪贴板内容
 
-If the new SnipDock bootstrap file does not exist and the old PromptShelf bootstrap file is found, SnipDock copies the bootstrap settings to:
+## 已知限制
 
-```text
-%APPDATA%\SnipDock\bootstrap.json
-```
-
-The old PromptShelf configuration is not deleted. User-selected storage paths are not renamed or moved, and the main data file remains `prompts.json` for now.
-
-## Privacy
-
-SnipDock is local-first. It does not provide cloud sync and does not send snippet content to any server. Data remains in the local directory selected by the user.
-
-Users should avoid committing their personal data directory to Git. The repository `.gitignore` excludes the known SnipDock data files and backup folders.
-
-## Known Limitations
-
-- Windows only.
-- No cloud sync.
-- No command execution. Command items are copied to the clipboard only.
-- Search covers titles and tags only, not item content.
-- Screenshots and packaged installers are not included yet.
+- 仅支持 Windows
+- 暂不提供云同步
+- 暂不提供安装器和自动更新
+- 搜索范围仅包括标题和标签，不包括条目正文
+- 命令条目不会执行，只会复制
+- beta 阶段仍需要更多真实环境稳定性验证
 
 ## Roadmap
 
-- Prepare signed or packaged release artifacts.
-- Add public screenshots and release notes.
-- Continue stability testing around backup restore, import/export, startup launch, and storage path changes.
-- Improve documentation for keyboard shortcuts and backup workflows.
-- Review UI text and localization before a stable release.
+- 补充正式截图和演示说明
+- 完善 GitHub Release 附件和校验信息
+- 准备更友好的安装包
+- 持续验证备份恢复、导入导出、开机自启和存储目录切换
+- 继续整理中文文案和公开文档
+
+## License
+
+SnipDock 使用 [MIT License](./LICENSE)。

@@ -37,6 +37,8 @@ project.lock.json
 logs/
 *.log
 *.log.*
+*.tmp
+*.bak
 
 # SnipDock user data and local configuration
 prompts.json
@@ -51,6 +53,10 @@ backups/
 *.msix
 *.msi
 SnipDock*.exe
+
+# Local screenshot drafts; README references docs/images instead
+/截图1.png
+/截图2.png
 
 # OS files
 Thumbs.db

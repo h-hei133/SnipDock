@@ -1,4 +1,4 @@
-name: CI
+name: Build
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   build-test:
+    name: Build and test on Windows
     runs-on: windows-latest
 
     steps:
