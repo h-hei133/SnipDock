@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +23,7 @@ namespace SnipDock.App.ViewModels
         private readonly ThemeService _themeService;
         private readonly IAppSettingsStore _appSettingsStore;
         private readonly LocalizationService _localizationService = new();
+        private const string AllTagsFilterKey = "__ALL_TAGS__";
 
         private readonly ShelfImportExportService _importExportService;
         private readonly BackupService _backupService;
@@ -35,8 +36,8 @@ namespace SnipDock.App.ViewModels
 
         // Phase 3 Filtering properties
         private string _selectedTypeFilter = "All";
-        private string _selectedTagFilter = "全部标签";
-        private ObservableCollection<string> _dynamicTags = new();
+        private string _selectedTagFilter = AllTagsFilterKey;
+        private ObservableCollection<TypeFilterItem> _dynamicTags = new();
 
         // Phase 4 Behavioral backing fields
         private bool _focusSearchOnOpen = true;
@@ -123,7 +124,7 @@ namespace SnipDock.App.ViewModels
                 if (!string.IsNullOrEmpty(path)) {
                     try {
                         System.Windows.Clipboard.SetText(path);
-                        ShowSuccessToast("路径已复制到剪贴板！");
+                        ShowSuccessToast(Loc["PathCopied"]);
                     } catch (Exception ex) {
                         Serilog.Log.Error(ex, "Failed to copy path to clipboard");
                     }
@@ -157,10 +158,35 @@ namespace SnipDock.App.ViewModels
             get => _selectedTypeFilter;
             set
             {
-                if (SetProperty(ref _selectedTypeFilter, value))
+                var normalized = NormalizeTypeFilter(value);
+                if (SetProperty(ref _selectedTypeFilter, normalized))
                 {
+                    OnPropertyChanged(nameof(SelectedTypeFilterItem));
                     _ = ExecuteSearchAsync();
-                    Serilog.Log.Information("条目类型筛选切换为: {Type}", value);
+                    Serilog.Log.Information("Type filter changed: {Type}", normalized);
+                }
+                else if (!string.Equals(value, normalized, StringComparison.Ordinal))
+                {
+                    NotifySelectedTypeFilterChanged();
+                }
+            }
+        }
+
+        public TypeFilterItem? SelectedTypeFilterItem
+        {
+            get => TypeFilters.FirstOrDefault(t => t.Key.Equals(_selectedTypeFilter, StringComparison.OrdinalIgnoreCase));
+            set
+            {
+                var normalized = NormalizeTypeFilter(value?.Key);
+                if (SetProperty(ref _selectedTypeFilter, normalized, nameof(SelectedTypeFilter)))
+                {
+                    OnPropertyChanged(nameof(SelectedTypeFilterItem));
+                    _ = ExecuteSearchAsync();
+                    Serilog.Log.Information("Type filter changed: {Type}", normalized);
+                }
+                else
+                {
+                    NotifySelectedTypeFilterChanged();
                 }
             }
         }
@@ -170,15 +196,40 @@ namespace SnipDock.App.ViewModels
             get => _selectedTagFilter;
             set
             {
-                if (SetProperty(ref _selectedTagFilter, value))
+                var normalized = NormalizeTagFilter(value);
+                if (SetProperty(ref _selectedTagFilter, normalized))
                 {
+                    OnPropertyChanged(nameof(SelectedTagFilterItem));
                     _ = ExecuteSearchAsync();
-                    Serilog.Log.Information("标签筛选切换为: {Tag}", value);
+                    Serilog.Log.Information("Tag filter changed: {Tag}", normalized);
+                }
+                else if (!string.Equals(value, normalized, StringComparison.Ordinal))
+                {
+                    NotifySelectedTagFilterChanged();
                 }
             }
         }
 
-        public ObservableCollection<string> DynamicTags
+        public TypeFilterItem? SelectedTagFilterItem
+        {
+            get => DynamicTags.FirstOrDefault(t => t.Key.Equals(_selectedTagFilter, StringComparison.OrdinalIgnoreCase));
+            set
+            {
+                var normalized = NormalizeTagFilter(value?.Key);
+                if (SetProperty(ref _selectedTagFilter, normalized, nameof(SelectedTagFilter)))
+                {
+                    OnPropertyChanged(nameof(SelectedTagFilterItem));
+                    _ = ExecuteSearchAsync();
+                    Serilog.Log.Information("Tag filter changed: {Tag}", normalized);
+                }
+                else
+                {
+                    NotifySelectedTagFilterChanged();
+                }
+            }
+        }
+
+        public ObservableCollection<TypeFilterItem> DynamicTags
         {
             get => _dynamicTags;
             set => SetProperty(ref _dynamicTags, value);
@@ -204,7 +255,7 @@ namespace SnipDock.App.ViewModels
                         _isEditing = false;
                         OnPropertyChanged(nameof(IsSettingsOpen));
                         OnPropertyChanged(nameof(IsEditing));
-                        Serilog.Log.Information("选中 Prompt 切换�? Id={Id}, Name={Name}", value.Id, value.Name);
+                        Serilog.Log.Information("Selected item changed: Id={Id}, Name={Name}", value.Id, value.Name);
                     }
                     else
                     {
@@ -283,11 +334,11 @@ namespace SnipDock.App.ViewModels
                 {
                     if (value)
                     {
-                        Serilog.Log.Information("打开外观与系统设置面�?(IsSettingsOpen = True)");
+                        Serilog.Log.Information("Settings panel opened (IsSettingsOpen = True)");
                     }
                     else
                     {
-                        Serilog.Log.Information("关闭外观与系统设置面�?(IsSettingsOpen = False)");
+                        Serilog.Log.Information("Settings panel closed (IsSettingsOpen = False)");
                     }
                     NotifyStateProperties();
                 }
@@ -654,6 +705,7 @@ namespace SnipDock.App.ViewModels
             _selectedLanguage = LocalizationService.NormalizeLanguage(settings.Language);
             Loc = _localizationService.CreateStrings(_selectedLanguage);
             RebuildTypeFilters();
+            RefreshAllTagsDisplay();
             _selectedTheme = settings.Theme;
             _selectedAccentColor = settings.AccentColor;
 
@@ -707,7 +759,7 @@ namespace SnipDock.App.ViewModels
             {
                 SearchText = SearchText,
                 SelectedTypeFilter = SelectedTypeFilter,
-                SelectedTagFilter = SelectedTagFilter == "全部标签" ? null : SelectedTagFilter
+                SelectedTagFilter = SelectedTagFilter == AllTagsFilterKey ? null : SelectedTagFilter
             };
 
             var sorted = await _promptService.QueryAsync(options);
@@ -734,39 +786,37 @@ namespace SnipDock.App.ViewModels
             try
             {
                 var all = await _promptService.GetAllAsync();
-                var tags = all
+                var tagItems = all
                     .SelectMany(p => p.Tags)
                     .Where(t => !string.IsNullOrWhiteSpace(t))
                     .GroupBy(t => t.Trim(), StringComparer.OrdinalIgnoreCase)
-                    .Select(g => g.First()) // Keep the first casing encountered
+                    .Select(g => g.First())
                     .OrderBy(t => t, StringComparer.OrdinalIgnoreCase)
+                    .Select(t => new TypeFilterItem { Key = t, DisplayName = t })
                     .ToList();
 
-                tags.Insert(0, "全部标签");
-                
-                string currentFilter = SelectedTagFilter;
-                DynamicTags = new ObservableCollection<string>(tags);
-                
-                if (tags.Contains(currentFilter, StringComparer.OrdinalIgnoreCase))
-                {
-                    _selectedTagFilter = currentFilter;
-                }
-                else
-                {
-                    _selectedTagFilter = "全部标签";
-                }
-                OnPropertyChanged(nameof(SelectedTagFilter));
+                tagItems.Insert(0, new TypeFilterItem { Key = AllTagsFilterKey, DisplayName = Loc["AllTags"] });
+
+                var currentFilter = NormalizeTagFilter(SelectedTagFilter);
+                SyncFilterItems(DynamicTags, tagItems);
+
+                _selectedTagFilter = DynamicTags.Any(t => t.Key.Equals(currentFilter, StringComparison.OrdinalIgnoreCase))
+                    ? currentFilter
+                    : AllTagsFilterKey;
+
+                OnPropertyChanged(nameof(DynamicTags));
+                NotifySelectedTagFilterChanged();
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "更新动态标签失败");
+                Serilog.Log.Error(ex, "Failed to update dynamic tags.");
             }
         }
 
         private void OnStartAdd()
         {
             Serilog.Log.Information("New item started (触发新建条目命令)");
-            EditorTitle = "新建条目";
+            EditorTitle = Loc["NewItemTitle"];
             _editingPromptId = null;
             EditingName = string.Empty;
             EditingTagsText = string.Empty;
@@ -781,7 +831,7 @@ namespace SnipDock.App.ViewModels
         private void OnStartEdit(PromptItem prompt)
         {
             Serilog.Log.Information("Edit started: id={Id}, name={Name} (触发编辑条目命令)", prompt.Id, prompt.Name);
-            EditorTitle = "编辑条目";
+            EditorTitle = Loc["EditItemTitle"];
             _editingPromptId = prompt.Id;
             EditingName = prompt.Name;
             EditingTagsText = string.Join(", ", prompt.Tags); // Separation format display for editing
@@ -802,7 +852,10 @@ namespace SnipDock.App.ViewModels
                 owner = Application.Current.MainWindow;
             }
 
-            var result = Views.ConfirmDialogWindow.Show(owner!, "删除确认", $"确定要删除条目 \u201c{prompt.Name}\u201d 吗？");
+            var result = Views.ConfirmDialogWindow.Show(
+                owner!,
+                Loc["DeleteConfirmTitle"],
+                string.Format(Loc["DeleteConfirmMessage"], prompt.Name));
             if (result)
             {
                 await _promptService.DeleteAsync(prompt.Id);
@@ -824,12 +877,12 @@ namespace SnipDock.App.ViewModels
         {
             if (string.IsNullOrWhiteSpace(EditingName))
             {
-                EditorError = "名称不能为空";
+                EditorError = Loc["NameRequired"];
                 return;
             }
             if (string.IsNullOrWhiteSpace(EditingContent))
             {
-                EditorError = "内容不能为空";
+                EditorError = Loc["ContentRequired"];
                 return;
             }
 
@@ -858,7 +911,7 @@ namespace SnipDock.App.ViewModels
                     // Automatically highlight and select the newly added item
                     SelectedPrompt = Prompts.FirstOrDefault(p => p.Id == newItem.Id);
                     Serilog.Log.Information("Selected item restored after save: Id={Id}", newItem.Id);
-                    ShowSuccessToast("已保存");
+                    ShowSuccessToast(Loc["Saved"]);
                 }
                 else
                 {
@@ -872,7 +925,7 @@ namespace SnipDock.App.ViewModels
                         existing.Tags = tags;
                         existing.Content = EditingContent;
                         existing.ItemType = EditingItemType;
-                        Serilog.Log.Information("保存编辑的条�? Id={Id}, Name={Name}, Type={Type}", existing.Id, existing.Name, existing.ItemType);
+                        Serilog.Log.Information("Saving edited item: Id={Id}, Name={Name}, Type={Type}", existing.Id, existing.Name, existing.ItemType);
                         await _promptService.UpdateAsync(existing);
                         
                         Serilog.Log.Information("Save edit completed: Id={Id}", existing.Id);
@@ -883,19 +936,19 @@ namespace SnipDock.App.ViewModels
                         // Automatically highlight and select the edited item
                         SelectedPrompt = Prompts.FirstOrDefault(p => p.Id == existing.Id);
                         Serilog.Log.Information("Selected item restored after save: Id={Id}", existing.Id);
-                    ShowSuccessToast("已保存");
+                    ShowSuccessToast(Loc["Saved"]);
                     }
                     else
                     {
                         Serilog.Log.Warning("未找到要编辑的条目 Id={Id}", _editingPromptId.Value);
-                        EditorError = "保存失败：条目已被删除或不存在";
+                        EditorError = Loc["SaveFailedMissingItem"];
                     }
                 }
             }
             catch (Exception ex)
             {
                 Serilog.Log.Error(ex, "保存条目失败");
-                EditorError = $"保存失败：{ex.Message}";
+                EditorError = string.Format(Loc["SaveFailed"], ex.Message);
             }
         }
 
@@ -918,7 +971,7 @@ namespace SnipDock.App.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Serilog.Log.Warning(ex, "剪贴板写入失�?(Clipboard.SetText failed)");
+                    Serilog.Log.Warning(ex, "Clipboard.SetText failed");
                     if (Application.Current != null)
                     {
                         throw;
@@ -933,18 +986,16 @@ namespace SnipDock.App.ViewModels
                     localizedType = SelectedPrompt.ItemType switch
                     {
                         "Prompt" => "Prompt",
-                        "Command" => "命令",
-                        "Snippet" => "片段",
-                        "Note" => "笔记",
-                        _ => "条目"
+                        "Command" => Loc["Command"],
+                        "Snippet" => Loc["Snippet"],
+                        "Note" => Loc["Note"],
+                        _ => Loc["ItemType"]
                     };
                     
                     Serilog.Log.Information("复制条目 {Name} ({Type}) 到剪贴板，UsageCount={Count}", SelectedPrompt.Name, SelectedPrompt.ItemType, SelectedPrompt.UsageCount);
                 }
 
-                ToastMessage = $"已复制 {localizedType} 内容";
-                IsToastSuccess = true;
-                IsToastVisible = true;
+                ShowSuccessToast(string.Format(Loc["CopiedContent"], localizedType));
 
                 // Re-sort/re-filter the list as UsageCount and LastUsedAt changed!
                 await ExecuteSearchAsync();
@@ -962,26 +1013,11 @@ namespace SnipDock.App.ViewModels
                     HidePanelRequested?.Invoke(this, EventArgs.Empty);
                 }
 
-                int currentId = ++_toastId;
-                await Task.Delay(1500);
-                if (currentId == _toastId)
-                {
-                    IsToastVisible = false;
-                }
             }
             catch (Exception ex)
             {
                 Serilog.Log.Error(ex, "复制失败");
-                ToastMessage = $"复制失败：{ex.Message}";
-                IsToastSuccess = false;
-                IsToastVisible = true;
-
-                int currentId = ++_toastId;
-                await Task.Delay(2500); // Show errors longer
-                if (currentId == _toastId)
-                {
-                    IsToastVisible = false;
-                }
+                ShowErrorToast(string.Format(Loc["CopyFailed"], ex.Message));
             }
         }
 
@@ -992,7 +1028,7 @@ namespace SnipDock.App.ViewModels
             {
                 await _promptService.ToggleFavoriteAsync(SelectedPrompt.Id);
                 
-                Serilog.Log.Information("条目收藏状态变�? {Name}, IsFavorite={IsFavorite}", SelectedPrompt.Name, SelectedPrompt.IsFavorite);
+                Serilog.Log.Information("Favorite state changed: {Name}, IsFavorite={IsFavorite}", SelectedPrompt.Name, SelectedPrompt.IsFavorite);
                 
                 // Refresh list sorting
                 await ExecuteSearchAsync();
@@ -1010,7 +1046,7 @@ namespace SnipDock.App.ViewModels
                 string path = CurrentStoragePath;
                 if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
                 {
-                    ShowErrorToast("数据目录不存在！");
+                    ShowErrorToast(Loc["DataDirMissing"]);
                     Serilog.Log.Warning("无法打开数据目录：目录不存在。Path={Path}", path);
                     return;
                 }
@@ -1023,7 +1059,7 @@ namespace SnipDock.App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"无法打开数据目录：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["OpenDataDirFailed"], ex.Message));
                 Serilog.Log.Error(ex, "打开数据目录失败");
             }
         }
@@ -1035,7 +1071,7 @@ namespace SnipDock.App.ViewModels
                 string path = Path.Combine(CurrentStoragePath, "logs");
                 if (string.IsNullOrWhiteSpace(CurrentStoragePath) || !Directory.Exists(path))
                 {
-                    ShowErrorToast("日志目录不存在！");
+                    ShowErrorToast(Loc["LogsDirMissing"]);
                     Serilog.Log.Warning("无法打开日志目录：目录不存在。Path={Path}", path);
                     return;
                 }
@@ -1048,7 +1084,7 @@ namespace SnipDock.App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"无法打开日志目录：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["OpenLogsDirFailed"], ex.Message));
                 Serilog.Log.Error(ex, "打开日志目录失败");
             }
         }
@@ -1059,9 +1095,9 @@ namespace SnipDock.App.ViewModels
             {
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Filter = "JSON 文件 (*.json)|*.json",
+                    Filter = Loc["JsonFileFilter"],
                     FileName = $"SnipDock_Export_{DateTime.Now:yyyyMMdd}.json",
-                    Title = "导出全部条目�?JSON 文件"
+                    Title = Loc["ExportDialogTitle"]
                 };
                 
                 Window? owner = Application.Current.Windows.OfType<Views.PromptPanelWindow>().FirstOrDefault();
@@ -1072,12 +1108,12 @@ namespace SnipDock.App.ViewModels
                     _lastExportedDir = Path.GetDirectoryName(dialog.FileName) ?? string.Empty;
                     var count = (await _promptService.GetAllAsync()).Count;
                     Serilog.Log.Information("成功导出 {Count} 条数据到 JSON 文件", count);
-                    ShowSuccessToast($"已成功导出 {count} 条！");
+                    ShowSuccessToast(string.Format(Loc["ExportSuccess"], count));
                 }
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"导出失败：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["ExportFailed"], ex.Message));
                 Serilog.Log.Error(ex, "导出数据失败");
             }
         }
@@ -1088,8 +1124,8 @@ namespace SnipDock.App.ViewModels
             {
                 var dialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Filter = "JSON 文件 (*.json)|*.json",
-                    Title = "选择要导入的 JSON 文件"
+                    Filter = Loc["JsonFileFilter"],
+                    Title = Loc["ImportDialogTitle"]
                 };
                 
                 Window? owner = Application.Current.Windows.OfType<Views.PromptPanelWindow>().FirstOrDefault();
@@ -1099,7 +1135,7 @@ namespace SnipDock.App.ViewModels
                     var result = await _importExportService.ImportAsync(dialog.FileName);
                     
                     Serilog.Log.Information("导入成功：新增 {Added} 条，跳过 {Skipped} 条重复", result.ImportedCount, result.SkippedCount);
-                    ShowSuccessToast($"导入成功：新增 {result.ImportedCount} 条，跳过 {result.SkippedCount} 条重复");
+                    ShowSuccessToast(string.Format(Loc["ImportSuccess"], result.ImportedCount, result.SkippedCount));
                     
                     // Refresh views and dynamic tags
                     await UpdateDynamicTagsAsync();
@@ -1108,13 +1144,15 @@ namespace SnipDock.App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"导入失败：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["ImportFailed"], ex.Message));
                 Serilog.Log.Error(ex, "数据导入失败");
             }
         }
 
         private void ShowSuccessToast(string message)
         {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
             ToastMessage = message;
             IsToastSuccess = true;
             IsToastVisible = true;
@@ -1128,6 +1166,8 @@ namespace SnipDock.App.ViewModels
 
         private void ShowErrorToast(string message)
         {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
             ToastMessage = message;
             IsToastSuccess = false;
             IsToastVisible = true;
@@ -1157,6 +1197,7 @@ namespace SnipDock.App.ViewModels
             var normalized = LocalizationService.NormalizeLanguage(language);
             Loc = _localizationService.CreateStrings(normalized);
             RebuildTypeFilters();
+            RefreshAllTagsDisplay();
 
             var settings = _appSettingsStore.Load();
             if (!settings.Language.Equals(normalized, StringComparison.OrdinalIgnoreCase))
@@ -1167,22 +1208,135 @@ namespace SnipDock.App.ViewModels
 
             OnPropertyChanged(nameof(IsLanguageChinese));
             OnPropertyChanged(nameof(IsLanguageEnglish));
+            OnPropertyChanged(nameof(SelectedTypeFilter));
+            OnPropertyChanged(nameof(SelectedTagFilter));
+            OnPropertyChanged(nameof(SelectedTagFilterItem));
             NotifyStateProperties();
         }
 
         private void RebuildTypeFilters()
         {
-            TypeFilters = new ObservableCollection<TypeFilterItem>
+            _selectedTypeFilter = NormalizeTypeFilter(_selectedTypeFilter);
+
+            var items = new[]
             {
-                new() { Key = "All", DisplayName = Loc["All"] },
-                new() { Key = "Prompt", DisplayName = "Prompt" },
-                new() { Key = "Command", DisplayName = Loc["Command"] },
-                new() { Key = "Snippet", DisplayName = Loc["Snippet"] },
-                new() { Key = "Note", DisplayName = Loc["Note"] },
-                new() { Key = "Favorites", DisplayName = Loc["Favorites"] },
-                new() { Key = "RecentlyUsed", DisplayName = Loc["RecentlyUsed"] },
+                new TypeFilterItem { Key = "All", DisplayName = Loc["All"] },
+                new TypeFilterItem { Key = "Prompt", DisplayName = "Prompt" },
+                new TypeFilterItem { Key = "Command", DisplayName = Loc["Command"] },
+                new TypeFilterItem { Key = "Snippet", DisplayName = Loc["Snippet"] },
+                new TypeFilterItem { Key = "Note", DisplayName = Loc["Note"] },
+                new TypeFilterItem { Key = "Favorites", DisplayName = Loc["Favorites"] },
+                new TypeFilterItem { Key = "RecentlyUsed", DisplayName = Loc["RecentlyUsed"] },
             };
+            SyncFilterItems(TypeFilters, items);
             OnPropertyChanged(nameof(TypeFilters));
+            NotifySelectedTypeFilterChanged();
+        }
+
+        private void NotifySelectedTypeFilterChanged()
+        {
+            OnPropertyChanged(nameof(SelectedTypeFilter));
+            OnPropertyChanged(nameof(SelectedTypeFilterItem));
+
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess() == false)
+            {
+                return;
+            }
+
+            dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    OnPropertyChanged(nameof(SelectedTypeFilter));
+                    OnPropertyChanged(nameof(SelectedTypeFilterItem));
+                }),
+                System.Windows.Threading.DispatcherPriority.DataBind);
+        }
+
+        private void RefreshAllTagsDisplay()
+        {
+            _selectedTagFilter = NormalizeTagFilter(_selectedTagFilter);
+
+            var allTags = DynamicTags.FirstOrDefault(t => t.Key == AllTagsFilterKey);
+            if (allTags == null)
+            {
+                DynamicTags.Insert(0, new TypeFilterItem { Key = AllTagsFilterKey, DisplayName = Loc["AllTags"] });
+            }
+            else
+            {
+                allTags.DisplayName = Loc["AllTags"];
+            }
+
+            OnPropertyChanged(nameof(DynamicTags));
+            NotifySelectedTagFilterChanged();
+        }
+
+        private void NotifySelectedTagFilterChanged()
+        {
+            OnPropertyChanged(nameof(SelectedTagFilter));
+            OnPropertyChanged(nameof(SelectedTagFilterItem));
+        }
+
+        private static void SyncFilterItems(ObservableCollection<TypeFilterItem> target, IEnumerable<TypeFilterItem> source)
+        {
+            var desired = source.ToList();
+
+            for (var index = target.Count - 1; index >= 0; index--)
+            {
+                var existing = target[index];
+                if (!desired.Any(item => item.Key.Equals(existing.Key, StringComparison.OrdinalIgnoreCase)))
+                {
+                    target.RemoveAt(index);
+                }
+            }
+
+            for (var index = 0; index < desired.Count; index++)
+            {
+                var item = desired[index];
+                var existing = target.FirstOrDefault(current => current.Key.Equals(item.Key, StringComparison.OrdinalIgnoreCase));
+                if (existing == null)
+                {
+                    target.Insert(index, item);
+                    continue;
+                }
+
+                existing.DisplayName = item.DisplayName;
+
+                var currentIndex = target.IndexOf(existing);
+                if (currentIndex != index)
+                {
+                    target.Move(currentIndex, index);
+                }
+            }
+        }
+
+        private static string NormalizeTypeFilter(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return "All";
+
+            var trimmed = value.Trim();
+            if (trimmed.Equals("All", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.Equals("全部", StringComparison.OrdinalIgnoreCase))
+            {
+                return "All";
+            }
+
+            return trimmed;
+        }
+
+        private static string NormalizeTagFilter(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return AllTagsFilterKey;
+
+            var trimmed = value.Trim();
+            if (trimmed.Equals(AllTagsFilterKey, StringComparison.OrdinalIgnoreCase) ||
+                trimmed.Equals("全部标签", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.Equals("All tags", StringComparison.OrdinalIgnoreCase))
+            {
+                return AllTagsFilterKey;
+            }
+
+            return trimmed;
         }
 
         private void OnChangeTheme(string? theme)
@@ -1193,7 +1347,7 @@ namespace SnipDock.App.ViewModels
             {
                 settings.Theme = theme;
                 _appSettingsStore.Save(settings);
-                Serilog.Log.Information("主题切换�? {Theme}", theme);
+                Serilog.Log.Information("Theme changed: {Theme}", theme);
             }
             _themeService.ApplyTheme(theme);
             // Refresh accent color because accent background depends on theme
@@ -1213,7 +1367,7 @@ namespace SnipDock.App.ViewModels
             {
                 settings.AccentColor = colorName;
                 _appSettingsStore.Save(settings);
-                Serilog.Log.Information("配色切换�? {AccentColor}", colorName);
+                Serilog.Log.Information("Accent color changed: {AccentColor}", colorName);
             }
             _themeService.ApplyAccentColor(colorName, settings.Theme);
 
@@ -1238,7 +1392,7 @@ namespace SnipDock.App.ViewModels
             {
                 if (!Clipboard.ContainsText())
                 {
-                    ShowErrorToast("剪贴板中没有可用文本");
+                    ShowErrorToast(Loc["ClipboardEmpty"]);
                     Serilog.Log.Information("从剪贴板新建条目失败：剪贴板为空或不含文本");
                     return;
                 }
@@ -1246,7 +1400,7 @@ namespace SnipDock.App.ViewModels
                 string text = Clipboard.GetText();
                 if (string.IsNullOrWhiteSpace(text))
                 {
-                    ShowErrorToast("剪贴板中没有可用文本");
+                    ShowErrorToast(Loc["ClipboardEmpty"]);
                     Serilog.Log.Information("从剪贴板新建条目失败：剪贴板文本为空");
                     return;
                 }
@@ -1257,7 +1411,7 @@ namespace SnipDock.App.ViewModels
                 var draft = ClipboardEntryFactory.CreateDraft(text, SelectedTypeFilter);
 
                 // Load to editor UI
-                EditorTitle = "添加新内容（来自剪贴板）";
+                EditorTitle = Loc["ClipboardItemTitle"];
                 _editingPromptId = null;
                 EditingName = draft.Name;
                 EditingTagsText = string.Empty;
@@ -1271,7 +1425,7 @@ namespace SnipDock.App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowErrorToast("读取剪贴板失败！");
+                ShowErrorToast(Loc["ClipboardReadFailed"]);
                 Serilog.Log.Error(ex, "读取剪贴板失败 (Clipboard text failed)");
             }
         }
@@ -1293,11 +1447,11 @@ namespace SnipDock.App.ViewModels
                     UseShellExecute = true
                 });
                 Serilog.Log.Information("已成功在资源管理器中打开备份目录：{Path}", path);
-                ShowSuccessToast("已打开备份目录");
+                ShowSuccessToast(Loc["OpenedBackups"]);
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"无法打开备份目录：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["OpenBackupsDirFailed"], ex.Message));
                 Serilog.Log.Error(ex, "打开备份目录失败");
             }
         }
@@ -1318,11 +1472,11 @@ namespace SnipDock.App.ViewModels
                     UseShellExecute = true
                 });
                 Serilog.Log.Information("已成功在资源管理器中打开导出目录：{Path}", path);
-                ShowSuccessToast("已打开数据目录");
+                ShowSuccessToast(Loc["OpenedData"]);
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"无法打开导出目录：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["OpenExportDirFailed"], ex.Message));
                 Serilog.Log.Error(ex, "打开导出目录失败");
             }
         }
@@ -1339,16 +1493,18 @@ namespace SnipDock.App.ViewModels
 
                 var dialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Filter = "JSON 文件 (*.json)|*.json",
+                    Filter = Loc["JsonFileFilter"],
                     InitialDirectory = backupsPath,
-                    Title = "选择要恢复的备份文件"
+                    Title = Loc["RestoreDialogTitle"]
                 };
 
                 Window? owner = Application.Current.Windows.OfType<Views.PromptPanelWindow>().FirstOrDefault();
                 if (dialog.ShowDialog(owner) == true)
                 {
-                    bool confirm = Views.ConfirmDialogWindow.Show(owner!, "恢复确认", 
-                        "恢复备份会用所选备份覆盖当前数据。在执行恢复前，系统自动创建当前数据的备份以防万一。\n\n是否继续恢复备份？");
+                    bool confirm = Views.ConfirmDialogWindow.Show(
+                        owner!,
+                        Loc["RestoreConfirmTitle"],
+                        Loc["RestoreConfirmMessage"]);
 
                     if (!confirm)
                     {
@@ -1362,11 +1518,11 @@ namespace SnipDock.App.ViewModels
                     // Re-initialize prompt service data
                     await _promptService.InitializeAsync();
 
-                    ShowSuccessToast("备份已成功恢复！");
+                    ShowSuccessToast(Loc["BackupRestored"]);
 
                     // Reset search and filters
                     _selectedTypeFilter = "All";
-                    _selectedTagFilter = "全部标签";
+                    _selectedTagFilter = AllTagsFilterKey;
                     _searchText = string.Empty;
                     OnPropertyChanged(nameof(SelectedTypeFilter));
                     OnPropertyChanged(nameof(SelectedTagFilter));
@@ -1378,7 +1534,7 @@ namespace SnipDock.App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"恢复备份失败：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["BackupRestoreFailed"], ex.Message));
                 Serilog.Log.Error(ex, "从备份恢复数据失败");
             }
         }
@@ -1389,18 +1545,18 @@ namespace SnipDock.App.ViewModels
             {
                 Serilog.Log.Information("用户手动触发了创建数据备份...");
                 await _backupService.CreateBackupAsync("Manual");
-                ShowSuccessToast("手动备份创建成功");
+                ShowSuccessToast(Loc["BackupCreated"]);
             }
             catch (Exception ex)
             {
-                ShowErrorToast($"备份创建失败：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["BackupCreateFailed"], ex.Message));
                 Serilog.Log.Error(ex, "手动备份创建失败");
             }
         }
 
         public void ShowHotkeyRegistrationFailedToast()
         {
-            ShowErrorToast("全局热键 Ctrl+Alt+P 注册失败，可能被占用。");
+            ShowErrorToast(Loc["HotkeyFailed"]);
         }
 
         // Phase 5 Methods & Commands Implementation
@@ -1423,8 +1579,8 @@ namespace SnipDock.App.ViewModels
                     {
                         Serilog.Log.Warning("检测到当前运行路径在 bin\\Debug 或 dotnet run，可能不稳定");
                         System.Windows.MessageBox.Show(
-                            "检测到当前程序处于开发调试目录，开机自启功能已被禁用。建议您在发布（Publish）并运行正式版可执行文件（exe）后再开启此功能。",
-                            "无法开启开机自启",
+                            Loc["StartupDevBlockedMessage"],
+                            Loc["StartupDevBlockedTitle"],
                             System.Windows.MessageBoxButton.OK,
                             System.Windows.MessageBoxImage.Warning);
                         
@@ -1433,12 +1589,12 @@ namespace SnipDock.App.ViewModels
                         return;
                     }
                     await _startupLaunchService.EnableAsync();
-                    ShowSuccessToast("已开启开机自动启动！");
+                    ShowSuccessToast(Loc["StartupEnabledToast"]);
                 }
                 else
                 {
                     await _startupLaunchService.DisableAsync();
-                    ShowSuccessToast("已关闭开机自动启动。");
+                    ShowSuccessToast(Loc["StartupDisabledToast"]);
                 }
 
                 var settings = _appSettingsStore.Load();
@@ -1448,7 +1604,7 @@ namespace SnipDock.App.ViewModels
             catch (Exception ex)
             {
                 Serilog.Log.Error(ex, "Startup launch failed");
-                ShowErrorToast("设置自启动失败，请检查权限。");
+                ShowErrorToast(Loc["StartupFailed"]);
 
                 _isStartupEnabled = !enable;
                 OnPropertyChanged(nameof(IsStartupEnabled));
@@ -1480,8 +1636,8 @@ namespace SnipDock.App.ViewModels
             if (oldTag.Equals(newTag, StringComparison.OrdinalIgnoreCase)) return;
 
             var confirm = System.Windows.MessageBox.Show(
-                $"确定要将标签 '{oldTag}' 重命名为 '{newTag}' 吗？将同步更新所有包含该标签的条目。",
-                "确认重命名",
+                string.Format(Loc["TagRenameConfirmMessage"], oldTag, newTag),
+                Loc["TagRenameConfirmTitle"],
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
 
@@ -1501,12 +1657,12 @@ namespace SnipDock.App.ViewModels
                 await LoadTagSummariesAsync();
                 await ExecuteSearchAsync();
 
-                ShowSuccessToast("标签重命名成功！");
+                ShowSuccessToast(Loc["TagRenamed"]);
             }
             catch (Exception ex)
             {
                 Serilog.Log.Error(ex, "Rename tag failed");
-                ShowErrorToast($"重命名失败：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["TagRenameFailed"], ex.Message));
             }
         }
 
@@ -1519,8 +1675,8 @@ namespace SnipDock.App.ViewModels
             if (sourceTag.Equals(targetTag, StringComparison.OrdinalIgnoreCase)) return;
 
             var confirm = System.Windows.MessageBox.Show(
-                $"确定要将标签 '{sourceTag}' 合并到 '{targetTag}' 吗？合并后所有包含 '{sourceTag}' 的条目将更新并去除重复标签。",
-                "确认合并标签",
+                string.Format(Loc["TagMergeConfirmMessage"], sourceTag, targetTag),
+                Loc["TagMergeConfirmTitle"],
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
 
@@ -1540,12 +1696,12 @@ namespace SnipDock.App.ViewModels
                 await LoadTagSummariesAsync();
                 await ExecuteSearchAsync();
 
-                ShowSuccessToast("标签合并成功。");
+                ShowSuccessToast(Loc["TagMerged"]);
             }
             catch (Exception ex)
             {
                 Serilog.Log.Error(ex, "Merge tags failed");
-                ShowErrorToast($"合并失败：{ex.Message}");
+                ShowErrorToast(string.Format(Loc["TagMergeFailed"], ex.Message));
             }
         }
 
@@ -1553,8 +1709,8 @@ namespace SnipDock.App.ViewModels
         {
             Serilog.Log.Information("Clean unused tags action triggered");
             System.Windows.MessageBox.Show(
-                "在当前版本中，标签是动态从条目内容中提取的。因为没有独立的标签数据表，所有显示的标签都已被至少一个条目所使用，因此不存在孤立的无用标签。",
-                "标签清理说明",
+                Loc["CleanTagsInfoMessage"],
+                Loc["CleanTagsInfoTitle"],
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
         }

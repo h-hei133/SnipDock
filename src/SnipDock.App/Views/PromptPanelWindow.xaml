@@ -1,7 +1,7 @@
 ﻿<Window x:Class="SnipDock.App.Views.PromptPanelWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{Binding Loc[WindowTitle]}" 
+        Title="{Binding Loc[WindowTitle], Mode=OneWay}"
         Height="540" Width="820"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
@@ -10,10 +10,10 @@
         ResizeMode="NoResize"
         ShowInTaskbar="True"
         PreviewKeyDown="Window_PreviewKeyDown">
-    
+
     <Window.Resources>
         <!-- Custom ListBoxItem Style for Premium Card Look -->
-        <Style TargetType="ListBoxItem">
+        <Style x:Key="PromptCardListBoxItemStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Margin" Value="0,0,0,8" />
@@ -22,7 +22,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="CardBorder" Background="{DynamicResource ThemeCardBackgroundBrush}" CornerRadius="8" Padding="12" 
+                        <Border x:Name="CardBorder" Background="{DynamicResource ThemeCardBackgroundBrush}" CornerRadius="8" Padding="12"
                                 BorderThickness="1.5" BorderBrush="Transparent" SnapsToDevicePixels="True">
                             <ContentPresenter />
                         </Border>
@@ -110,12 +110,12 @@
             <!-- Title Bar / Header (Draggable, Rounded Corners clipping fix) -->
             <Border Grid.Row="0" Background="{DynamicResource ThemeHeaderBackgroundBrush}" CornerRadius="10,10,0,0" MouseDown="TitleBar_MouseDown" SnapsToDevicePixels="True">
                 <Grid>
-                    <TextBlock Text="{Binding Loc[PanelTitle]}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="13" FontWeight="Bold" 
+                    <TextBlock Text="{Binding Loc[PanelTitle], Mode=OneWay}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="13" FontWeight="Bold"
                                VerticalAlignment="Center" Margin="15,0,0,0" />
-                    
+
                     <!-- Settings Button (Gear) -->
-                    <Button Content="☰" Command="{Binding ToggleSettingsCommand}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent" 
-                            BorderThickness="0" HorizontalAlignment="Right" FontSize="18" Width="40" Height="40" Margin="0,0,40,0" Cursor="Hand" ToolTip="{Binding Loc[SettingsTooltip]}">
+                    <Button Content="☰" Command="{Binding ToggleSettingsCommand}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent"
+                            BorderThickness="0" HorizontalAlignment="Right" FontSize="18" Width="40" Height="40" Margin="0,0,40,0" Cursor="Hand" ToolTip="{Binding Loc[SettingsTooltip], Mode=OneWay}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -137,7 +137,7 @@
                     </Button>
 
                     <!-- Close Button -->
-                    <Button Content="✕" Click="Close_Click" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent" 
+                    <Button Content="✕" Click="Close_Click" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent"
                             BorderThickness="0" HorizontalAlignment="Right" FontSize="14" Width="40" Height="40" Cursor="Hand">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -190,22 +190,25 @@
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        
+
                         <!-- Type Filter Column -->
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="{Binding Loc[TypeFilterLabel]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="10.5" Margin="0,0,0,4"/>
-                            <ComboBox ItemsSource="{Binding TypeFilters}" 
-                                      SelectedValuePath="Key" 
-                                      DisplayMemberPath="DisplayName" 
-                                      SelectedValue="{Binding SelectedTypeFilter, UpdateSourceTrigger=PropertyChanged}" 
-                                      Height="30" 
+                            <TextBlock Text="{Binding Loc[TypeFilterLabel], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="10.5" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding TypeFilters}"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectedItem="{Binding SelectedTypeFilterItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Height="30"
                                       VerticalContentAlignment="Center" />
                         </StackPanel>
-                        
+
                         <!-- Tag Filter Column -->
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="{Binding Loc[TagFilterLabel]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="10.5" Margin="0,0,0,4"/>
-                            <ComboBox ItemsSource="{Binding DynamicTags}" SelectedItem="{Binding SelectedTagFilter}" Height="30" VerticalContentAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[TagFilterLabel], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="10.5" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding DynamicTags}"
+                                      DisplayMemberPath="DisplayName"
+                                      SelectedItem="{Binding SelectedTagFilterItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Height="30"
+                                      VerticalContentAlignment="Center" />
                         </StackPanel>
                     </Grid>
 
@@ -216,8 +219,8 @@
                             <ColumnDefinition Width="8" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        
-                        <Button Grid.Column="0" Content="{Binding Loc[AddItem]}" Command="{Binding AddCommand}" 
+
+                        <Button Grid.Column="0" Content="{Binding Loc[AddItem], Mode=OneWay}" Command="{Binding AddCommand}"
                                 Background="{DynamicResource AccentColorBrush}" Foreground="#ffffff" BorderThickness="0" Padding="0,8"
                                 FontWeight="Bold" FontSize="12" Cursor="Hand">
                             <Button.Resources>
@@ -236,7 +239,7 @@
                             </Button.Style>
                         </Button>
 
-                        <Button Grid.Column="2" Content="{Binding Loc[AddFromClipboard]}" Command="{Binding AddFromClipboardCommand}" 
+                        <Button Grid.Column="2" Content="{Binding Loc[AddFromClipboard], Mode=OneWay}" Command="{Binding AddFromClipboardCommand}"
                                 Background="{DynamicResource ThemeSecondaryButtonBgBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0" Padding="0,8"
                                 FontWeight="Bold" FontSize="12" Cursor="Hand">
                             <Button.Resources>
@@ -258,6 +261,7 @@
 
                     <!-- Prompts ListBox (Clean custom scrollbars apply globally) -->
                     <ListBox x:Name="PromptsListBox" Grid.Row="3" ItemsSource="{Binding Prompts}" SelectedItem="{Binding SelectedPrompt}"
+                             ItemContainerStyle="{StaticResource PromptCardListBoxItemStyle}"
                              Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListBox.ItemTemplate>
@@ -268,27 +272,27 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    
+
                                     <!-- Name and Badges -->
                                     <Grid Grid.Row="0" Margin="0,0,0,5">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        
+
                                         <!-- Title -->
                                         <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="13.5" FontWeight="Bold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                                        
+
                                         <!-- Badges Row -->
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
                                             <!-- Pinned Icon (Show only when IsPinned is True) -->
                                             <TextBlock Text="📌" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"
                                                        Visibility="{Binding IsPinned, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                            
+
                                             <!-- Favorite Star (Show only when IsFavorite is True) -->
                                             <TextBlock Text="★" Foreground="#fbbf24" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"
                                                        Visibility="{Binding IsFavorite, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                            
+
                                             <!-- Type Badge -->
                                             <Border CornerRadius="3" Padding="5,1.5" VerticalAlignment="Center">
                                                 <Border.Style>
@@ -317,15 +321,15 @@
                                                                     <Setter Property="Foreground" Value="{DynamicResource TypeBadgePromptText}" />
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding ItemType}" Value="Command">
-                                                                    <Setter Property="Text" Value="命令" />
+                                                                    <Setter Property="Text" Value="Command" />
                                                                     <Setter Property="Foreground" Value="{DynamicResource TypeBadgeCommandText}" />
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding ItemType}" Value="Snippet">
-                                                                    <Setter Property="Text" Value="片段" />
+                                                                    <Setter Property="Text" Value="Snippet" />
                                                                     <Setter Property="Foreground" Value="{DynamicResource TypeBadgeSnippetText}" />
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding ItemType}" Value="Note">
-                                                                    <Setter Property="Text" Value="笔记" />
+                                                                    <Setter Property="Text" Value="Note" />
                                                                     <Setter Property="Foreground" Value="{DynamicResource TypeBadgeNoteText}" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -335,7 +339,7 @@
                                             </Border>
                                         </StackPanel>
                                     </Grid>
-                                    
+
                                     <!-- Tags list -->
                                     <ItemsControl Grid.Row="1" ItemsSource="{Binding Tags}" Margin="0,0,0,6">
                                         <ItemsControl.ItemsPanel>
@@ -353,7 +357,7 @@
                                     </ItemsControl>
 
                                     <!-- Content Preview -->
-                                    <TextBlock Grid.Row="2" Text="{Binding Content}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" 
+                                    <TextBlock Grid.Row="2" Text="{Binding Content}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11"
                                                TextTrimming="CharacterEllipsis" Height="32"/>
                                 </Grid>
                             </DataTemplate>
@@ -366,16 +370,16 @@
 
                 <!-- Right Column: Flat mutually exclusive Views (guarantees no dependency property precedence traps) -->
                 <Grid Grid.Column="2">
-                    
+
                     <!-- 1. EMPTY STATE VIEW -->
                     <Grid x:Name="EmptyStateView" Visibility="{Binding IsEmptyStateVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="📁" FontSize="48" Foreground="{DynamicResource ThemeTextDisabledBrush}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                            <TextBlock Text="{Binding Loc[EmptyStateTitle]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="14" HorizontalAlignment="Center"/>
-                            <TextBlock Text="{Binding Loc[EmptyStateHint]}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="11.5" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                            <TextBlock Text="{Binding Loc[EmptyStateTitle], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="14" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Loc[EmptyStateHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="11.5" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                         </StackPanel>
                     </Grid>
-                    
+
                     <!-- 2. EDITOR VIEW -->
                     <Grid x:Name="EditorView" Visibility="{Binding IsEditorVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.RowDefinitions>
@@ -391,30 +395,30 @@
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="0,0,10,0">
                                 <!-- Name -->
-                                <TextBlock Text="{Binding Loc[ItemName]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding EditingName, UpdateSourceTrigger=PropertyChanged}" 
+                                <TextBlock Text="{Binding Loc[ItemName], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding EditingName, UpdateSourceTrigger=PropertyChanged}"
                                          Margin="0,0,0,15" Padding="10,6" Height="36" />
 
                                 <!-- Item Type Selection -->
-                                <TextBlock Text="{Binding Loc[TypeFilterLabel]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
-                                <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding EditingItemType, UpdateSourceTrigger=PropertyChanged}" 
+                                <TextBlock Text="{Binding Loc[TypeFilterLabel], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
+                                <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding EditingItemType, UpdateSourceTrigger=PropertyChanged}"
                                           Margin="0,0,0,15" Height="34" VerticalContentAlignment="Center">
                                     <ComboBoxItem Content="Prompt" Tag="Prompt"/>
-                                    <ComboBoxItem Content="{Binding Loc[Command]}" Tag="Command"/>
-                                    <ComboBoxItem Content="{Binding Loc[Snippet]}" Tag="Snippet"/>
-                                    <ComboBoxItem Content="{Binding Loc[Note]}" Tag="Note"/>
+                                    <ComboBoxItem Content="{Binding Loc[Command], Mode=OneWay}" Tag="Command"/>
+                                    <ComboBoxItem Content="{Binding Loc[Snippet], Mode=OneWay}" Tag="Snippet"/>
+                                    <ComboBoxItem Content="{Binding Loc[Note], Mode=OneWay}" Tag="Note"/>
                                 </ComboBox>
 
                                 <!-- Tags separated by commas/semicolons -->
-                                <TextBlock Text="{Binding Loc[Tags]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding EditingTagsText, UpdateSourceTrigger=PropertyChanged}" 
+                                <TextBlock Text="{Binding Loc[Tags], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding EditingTagsText, UpdateSourceTrigger=PropertyChanged}"
                                          Margin="0,0,0,5" Padding="10,6" Height="36" />
-                                <TextBlock Text="* 本项目使用 AI 辅助开发（包括 Code Review）" 
+                                <TextBlock Text="{Binding Loc[AiAssistNotice], Mode=OneWay}"
                                            Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
                                 <!-- Content -->
-                                <TextBlock Text="{Binding Loc[ItemContent]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding EditingContent, UpdateSourceTrigger=PropertyChanged}" 
+                                <TextBlock Text="{Binding Loc[ItemContent], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding EditingContent, UpdateSourceTrigger=PropertyChanged}"
                                          AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" Height="185"
                                          Padding="10" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                             </StackPanel>
@@ -422,11 +426,11 @@
 
                         <!-- Error Message & Editor Actions -->
                         <Grid Grid.Row="2" Margin="0,15,0,0">
-                            <TextBlock Text="{Binding EditorError}" Foreground="#f87171" FontSize="11.5" VerticalAlignment="Center" 
+                            <TextBlock Text="{Binding EditorError}" Foreground="#f87171" FontSize="11.5" VerticalAlignment="Center"
                                        TextWrapping="Wrap" Width="260" HorizontalAlignment="Left"/>
-                            
+
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Content="{Binding Loc[Cancel]}" Command="{Binding CancelEditCommand}" 
+                                <Button Content="{Binding Loc[Cancel], Mode=OneWay}" Command="{Binding CancelEditCommand}"
                                         Background="{DynamicResource ThemeSecondaryButtonBgBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0" Padding="20,7" Margin="0,0,10,0" Cursor="Hand">
                                     <Button.Resources>
                                         <Style TargetType="{x:Type Border}">
@@ -443,8 +447,8 @@
                                         </Style>
                                     </Button.Style>
                                 </Button>
-                                
-                                <Button Content="{Binding Loc[Save]}" Command="{Binding SavePromptCommand}" 
+
+                                <Button Content="{Binding Loc[Save], Mode=OneWay}" Command="{Binding SavePromptCommand}"
                                         Background="{DynamicResource AccentColorBrush}" Foreground="#ffffff" BorderThickness="0" Padding="20,7" FontWeight="Bold" Cursor="Hand">
                                     <Button.Resources>
                                         <Style TargetType="{x:Type Border}">
@@ -464,7 +468,7 @@
                             </StackPanel>
                         </Grid>
                     </Grid>
- 
+
                     <!-- 3. SETTINGS VIEW -->
                     <Grid x:Name="SettingsView" Visibility="{Binding IsSettingsPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid.RowDefinitions>
@@ -473,64 +477,64 @@
                         </Grid.RowDefinitions>
 
                         <!-- Title -->
-                        <TextBlock Grid.Row="0" Text="{Binding Loc[SettingsTitle]}" Foreground="{DynamicResource AccentColorBrush}" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <TextBlock Grid.Row="0" Text="{Binding Loc[SettingsTitle], Mode=OneWay}" Foreground="{DynamicResource AccentColorBrush}" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
 
                         <!-- Settings TabControl -->
                         <TabControl Grid.Row="1">
                             <!-- Tab 1: 常规设置 -->
-                            <TabItem Header="{Binding Loc[GeneralSettings]}">
+                            <TabItem Header="{Binding Loc[GeneralSettings], Mode=OneWay}">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="0,0,10,0">
-                                        <TextBlock Text="{Binding Loc[Language]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
+                                        <TextBlock Text="{Binding Loc[Language], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                                            <RadioButton Content="{Binding Loc[Chinese]}" IsChecked="{Binding IsLanguageChinese}"
+                                            <RadioButton Content="{Binding Loc[Chinese], Mode=OneWay}" IsChecked="{Binding IsLanguageChinese}"
                                                          Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,25,0" Cursor="Hand" />
-                                            <RadioButton Content="{Binding Loc[English]}" IsChecked="{Binding IsLanguageEnglish}"
+                                            <RadioButton Content="{Binding Loc[English], Mode=OneWay}" IsChecked="{Binding IsLanguageEnglish}"
                                                          Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand" />
                                         </StackPanel>
 
                                         <!-- Section 1: Theme selection -->
-                                        <TextBlock Text="{Binding Loc[Theme]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,0,0,10"/>
+                                        <TextBlock Text="{Binding Loc[Theme], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,0,0,10"/>
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                                            <RadioButton Content="{Binding Loc[DarkMode]}" IsChecked="{Binding IsThemeDark}" 
+                                            <RadioButton Content="{Binding Loc[DarkMode], Mode=OneWay}" IsChecked="{Binding IsThemeDark}"
                                                           Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,25,0" Cursor="Hand" />
-                                            <RadioButton Content="{Binding Loc[LightMode]}" IsChecked="{Binding IsThemeLight}" 
+                                            <RadioButton Content="{Binding Loc[LightMode], Mode=OneWay}" IsChecked="{Binding IsThemeLight}"
                                                           Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand" />
                                         </StackPanel>
 
                                         <!-- Section 2: Accent color selection -->
-                                        <TextBlock Text="{Binding Loc[AccentColor]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,0,0,10"/>
+                                        <TextBlock Text="{Binding Loc[AccentColor], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,0,0,10"/>
                                         <StackPanel Orientation="Horizontal" Margin="4,0,0,15">
-                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#7c3aed" BorderBrush="#a78bfa" Content="Purple" IsChecked="{Binding IsAccentPurple}" ToolTip="紫色" />
-                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#3b82f6" BorderBrush="#93c5fd" Content="Blue" IsChecked="{Binding IsAccentBlue}" ToolTip="蓝色" />
-                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#10b981" BorderBrush="#6ee7b7" Content="Green" IsChecked="{Binding IsAccentGreen}" ToolTip="绿色" />
-                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#f97316" BorderBrush="#fdba74" Content="Orange" IsChecked="{Binding IsAccentOrange}" ToolTip="橙色" />
-                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#ec4899" BorderBrush="#fbcfe8" Content="Pink" IsChecked="{Binding IsAccentPink}" ToolTip="粉色" />
+                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#7c3aed" BorderBrush="#a78bfa" Content="Purple" IsChecked="{Binding IsAccentPurple}" ToolTip="Purple" />
+                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#3b82f6" BorderBrush="#93c5fd" Content="Blue" IsChecked="{Binding IsAccentBlue}" ToolTip="Blue" />
+                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#10b981" BorderBrush="#6ee7b7" Content="Green" IsChecked="{Binding IsAccentGreen}" ToolTip="Green" />
+                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#f97316" BorderBrush="#fdba74" Content="Orange" IsChecked="{Binding IsAccentOrange}" ToolTip="Orange" />
+                                            <RadioButton Style="{StaticResource ColorBadgeStyle}" Background="#ec4899" BorderBrush="#fbcfe8" Content="Pink" IsChecked="{Binding IsAccentPink}" ToolTip="Pink" />
                                         </StackPanel>
 
                                         <!-- Section 3: Behavioral Preferences -->
-                                        <TextBlock Text="{Binding Loc[Behavior]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
+                                        <TextBlock Text="{Binding Loc[Behavior], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
                                         <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,15">
                                             <StackPanel>
-                                                <CheckBox Content="{Binding Loc[FocusSearch]}" IsChecked="{Binding FocusSearchOnOpen}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,10" Cursor="Hand"/>
-                                                <CheckBox Content="{Binding Loc[SelectSearch]}" IsChecked="{Binding SelectSearchTextOnOpen}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,10" Cursor="Hand" IsEnabled="{Binding FocusSearchOnOpen}"/>
+                                                <CheckBox Content="{Binding Loc[FocusSearch], Mode=OneWay}" IsChecked="{Binding FocusSearchOnOpen}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,10" Cursor="Hand"/>
+                                                <CheckBox Content="{Binding Loc[SelectSearch], Mode=OneWay}" IsChecked="{Binding SelectSearchTextOnOpen}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,10" Cursor="Hand" IsEnabled="{Binding FocusSearchOnOpen}"/>
                                                 <StackPanel Margin="0,0,0,10">
-                                                    <CheckBox Content="{Binding Loc[HideAfterCopy]}" IsChecked="{Binding HidePanelAfterCopy}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand"/>
-                                                    <TextBlock Text="{Binding Loc[HideAfterCopyHint]}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" Margin="20,4,0,0" TextWrapping="Wrap"/>
+                                                    <CheckBox Content="{Binding Loc[HideAfterCopy], Mode=OneWay}" IsChecked="{Binding HidePanelAfterCopy}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand"/>
+                                                    <TextBlock Text="{Binding Loc[HideAfterCopyHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" Margin="20,4,0,0" TextWrapping="Wrap"/>
                                                 </StackPanel>
-                                                <CheckBox Content="{Binding Loc[ClearSearchAfterCopy]}" IsChecked="{Binding ClearSearchAfterCopy}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand"/>
+                                                <CheckBox Content="{Binding Loc[ClearSearchAfterCopy], Mode=OneWay}" IsChecked="{Binding ClearSearchAfterCopy}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand"/>
                                             </StackPanel>
                                         </Border>
 
                                         <!-- Section 4: Resident & Startup -->
-                                        <TextBlock Text="{Binding Loc[StartupSection]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,5,0,10"/>
+                                        <TextBlock Text="{Binding Loc[StartupSection], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,5,0,10"/>
                                         <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,20">
                                             <StackPanel>
                                                 <StackPanel Margin="0,0,0,10">
-                                                    <CheckBox Content="{Binding Loc[StartupEnabled]}" IsChecked="{Binding IsStartupEnabled}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand"/>
-                                                    <TextBlock Text="{Binding Loc[StartupHint]}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" Margin="20,4,0,0" TextWrapping="Wrap"/>
+                                                    <CheckBox Content="{Binding Loc[StartupEnabled], Mode=OneWay}" IsChecked="{Binding IsStartupEnabled}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand"/>
+                                                    <TextBlock Text="{Binding Loc[StartupHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" Margin="20,4,0,0" TextWrapping="Wrap"/>
                                                 </StackPanel>
-                                                <TextBlock Text="* 开发调试模式下（包括 bin\Debug 或 dotnet run）不建议开启自动启动。建议在发布（Publish）后的 exe 中开启。" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding Loc[StartupDevHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -538,36 +542,36 @@
                             </TabItem>
 
                             <!-- Tab 2: 数据管理 -->
-                            <TabItem Header="{Binding Loc[DataManagement]}">
+                            <TabItem Header="{Binding Loc[DataManagement], Mode=OneWay}">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="0,0,10,0">
                                         <!-- Section 1: Storage directory -->
-                                        <TextBlock Text="{Binding Loc[DataManagement]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
+                                        <TextBlock Text="{Binding Loc[DataManagement], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
                                         <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,15">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding CurrentStoragePath}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,12" />
                                                 <WrapPanel>
-                                                    <Button Content="{Binding Loc[OpenDataDir]}" Command="{Binding OpenStorageDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
-                                                    <Button Content="{Binding Loc[OpenLogsDir]}" Command="{Binding OpenLogsDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
-                                                    <Button Content="{Binding Loc[OpenBackupsDir]}" Command="{Binding OpenBackupsDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
-                                                    <Button Content="{Binding Loc[OpenExportDir]}" Command="{Binding OpenExportDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
-                                                    <Button Content="{Binding Loc[ChangeStorageDir]}" Command="{Binding ChangeStoragePathCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,0,10" />
+                                                    <Button Content="{Binding Loc[OpenDataDir], Mode=OneWay}" Command="{Binding OpenStorageDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
+                                                    <Button Content="{Binding Loc[OpenLogsDir], Mode=OneWay}" Command="{Binding OpenLogsDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
+                                                    <Button Content="{Binding Loc[OpenBackupsDir], Mode=OneWay}" Command="{Binding OpenBackupsDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
+                                                    <Button Content="{Binding Loc[OpenExportDir], Mode=OneWay}" Command="{Binding OpenExportDirCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,10" />
+                                                    <Button Content="{Binding Loc[ChangeStorageDir], Mode=OneWay}" Command="{Binding ChangeStoragePathCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,0,10" />
                                                 </WrapPanel>
                                             </StackPanel>
                                         </Border>
 
                                         <!-- Section 2: Data migration -->
-                                        <TextBlock Text="{Binding Loc[ImportExport]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,5,0,10"/>
+                                        <TextBlock Text="{Binding Loc[ImportExport], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,5,0,10"/>
                                         <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,20">
                                             <StackPanel>
                                                 <WrapPanel Margin="0,0,0,12">
-                                                    <Button Content="{Binding Loc[ExportJson]}" Command="{Binding ExportDataCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,0" />
-                                                    <Button Content="{Binding Loc[ImportJson]}" Command="{Binding ImportDataCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" />
+                                                    <Button Content="{Binding Loc[ExportJson], Mode=OneWay}" Command="{Binding ExportDataCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,0" />
+                                                    <Button Content="{Binding Loc[ImportJson], Mode=OneWay}" Command="{Binding ImportDataCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" />
                                                 </WrapPanel>
                                                 <Border Height="1" Background="{DynamicResource ThemeBorderBrush}" Margin="0,0,0,12"/>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Button Content="{Binding Loc[RestoreBackup]}" Command="{Binding RestoreBackupCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,0" />
-                                                    <Button Content="{Binding Loc[CreateBackup]}" Command="{Binding CreateManualBackupCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" />
+                                                    <Button Content="{Binding Loc[RestoreBackup], Mode=OneWay}" Command="{Binding RestoreBackupCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,0" />
+                                                    <Button Content="{Binding Loc[CreateBackup], Mode=OneWay}" Command="{Binding CreateManualBackupCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" />
                                                 </StackPanel>
                                             </StackPanel>
                                         </Border>
@@ -576,7 +580,7 @@
                             </TabItem>
 
                             <!-- Tab 3: 标签整理 -->
-                            <TabItem Header="{Binding Loc[TagManagement]}">
+                            <TabItem Header="{Binding Loc[TagManagement], Mode=OneWay}">
                                 <Grid Margin="0,10,10,10">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="180" />
@@ -596,33 +600,33 @@
 
                                     <!-- Right: Action area -->
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBlock Text="{Binding Loc[TagPanel]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,0,0,12"/>
-                                        
+                                        <TextBlock Text="{Binding Loc[TagPanel], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,0,0,12"/>
+
                                         <Grid IsEnabled="{Binding IsTagSelected}">
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Loc[SelectedTag]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding Loc[SelectedTag], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,4"/>
                                                 <TextBlock Text="{Binding SelectedTagSummary.TagName}" Foreground="{DynamicResource AccentColorBrush}" FontSize="15" FontWeight="Bold" Margin="0,0,0,15"/>
 
-                                                <TextBlock Text="{Binding Loc[TargetTag]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding Loc[TargetTag], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,4"/>
                                                 <TextBox Text="{Binding TargetTagName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource {x:Type TextBox}}" Margin="0,0,0,15"/>
 
-                                                <Button Content="{Binding Loc[RenameTag]}" Command="{Binding RenameTagCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150" Margin="0,0,0,8"/>
-                                                <Button Content="{Binding Loc[MergeTag]}" Command="{Binding MergeTagsCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150" Margin="0,0,0,20"/>
+                                                <Button Content="{Binding Loc[RenameTag], Mode=OneWay}" Command="{Binding RenameTagCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150" Margin="0,0,0,8"/>
+                                                <Button Content="{Binding Loc[MergeTag], Mode=OneWay}" Command="{Binding MergeTagsCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150" Margin="0,0,0,20"/>
                                             </StackPanel>
                                         </Grid>
 
                                         <Border Height="1" Background="{DynamicResource ThemeBorderBrush}" Margin="0,0,0,20"/>
-                                        <TextBlock Text="{Binding Loc[UnusedTags]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,4"/>
-                                        <Button Content="{Binding Loc[CleanTags]}" Command="{Binding CleanUnusedTagsCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150"/>
+                                        <TextBlock Text="{Binding Loc[UnusedTags], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,4"/>
+                                        <Button Content="{Binding Loc[CleanTags], Mode=OneWay}" Command="{Binding CleanUnusedTagsCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150"/>
                                     </StackPanel>
                                 </Grid>
                             </TabItem>
 
                             <!-- Tab 4: 关于软件 -->
-                            <TabItem Header="{Binding Loc[About]}">
+                            <TabItem Header="{Binding Loc[About], Mode=OneWay}">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="0,10,10,0">
-                                        <TextBlock Text="{Binding Loc[AboutSnipDock]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,0,0,15"/>
+                                        <TextBlock Text="{Binding Loc[AboutSnipDock], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,0,0,15"/>
                                         <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,15">
                                             <Grid>
                                                 <Grid.RowDefinitions>
@@ -636,59 +640,59 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Loc[AppName]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Loc[AppName], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="SnipDock" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontWeight="Bold" Margin="0,0,0,8"/>
 
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Loc[Version]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Loc[Version], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AppVersion}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,8"/>
 
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Loc[DataVersion]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Loc[DataVersion], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DataSchemaVersion}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,8"/>
 
-                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding Loc[Stats]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding Loc[Stats], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                                                 <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Loc[TotalItems]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding Loc[TotalItems], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                                                     <TextBlock Text="{Binding TotalItemsCount}" Foreground="{DynamicResource AccentColorBrush}" FontWeight="Bold" Margin="0,0,15,0"/>
-                                                    <TextBlock Text="{Binding Loc[TotalTags]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding Loc[TotalTags], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                                                     <TextBlock Text="{Binding TotalTagsCount}" Foreground="{DynamicResource AccentColorBrush}" FontWeight="Bold"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
 
-                                        <TextBlock Text="{Binding Loc[SystemPaths]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,5,0,10"/>
+                                        <TextBlock Text="{Binding Loc[SystemPaths], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,5,0,10"/>
                                         <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,20">
                                             <StackPanel>
                                                 <!-- Data Path -->
-                                                <TextBlock Text="{Binding Loc[StoragePath]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,2"/>
+                                                <TextBlock Text="{Binding Loc[StoragePath], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,2"/>
                                                 <Grid Margin="0,0,0,12">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" Text="{Binding StorageDirectoryPath}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="11.5" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                    <Button Grid.Column="1" Content="{Binding Loc[Copy]}" Command="{Binding CopyPathCommand}" CommandParameter="{Binding StorageDirectoryPath}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,3" FontSize="11" Margin="10,0,0,0"/>
+                                                    <Button Grid.Column="1" Content="{Binding Loc[Copy], Mode=OneWay}" Command="{Binding CopyPathCommand}" CommandParameter="{Binding StorageDirectoryPath}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,3" FontSize="11" Margin="10,0,0,0"/>
                                                 </Grid>
 
                                                 <!-- Log Path -->
-                                                <TextBlock Text="{Binding Loc[LogsPath]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,2"/>
+                                                <TextBlock Text="{Binding Loc[LogsPath], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,2"/>
                                                 <Grid Margin="0,0,0,12">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" Text="{Binding LogsDirectoryPath}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="11.5" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                    <Button Grid.Column="1" Content="{Binding Loc[Copy]}" Command="{Binding CopyPathCommand}" CommandParameter="{Binding LogsDirectoryPath}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,3" FontSize="11" Margin="10,0,0,0"/>
+                                                    <Button Grid.Column="1" Content="{Binding Loc[Copy], Mode=OneWay}" Command="{Binding CopyPathCommand}" CommandParameter="{Binding LogsDirectoryPath}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,3" FontSize="11" Margin="10,0,0,0"/>
                                                 </Grid>
 
                                                 <!-- Backup Path -->
-                                                <TextBlock Text="{Binding Loc[BackupsPath]}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,2"/>
+                                                <TextBlock Text="{Binding Loc[BackupsPath], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,2"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" Text="{Binding BackupsDirectoryPath}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="11.5" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                    <Button Grid.Column="1" Content="{Binding Loc[Copy]}" Command="{Binding CopyPathCommand}" CommandParameter="{Binding BackupsDirectoryPath}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,3" FontSize="11" Margin="10,0,0,0"/>
+                                                    <Button Grid.Column="1" Content="{Binding Loc[Copy], Mode=OneWay}" Command="{Binding CopyPathCommand}" CommandParameter="{Binding BackupsDirectoryPath}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,3" FontSize="11" Margin="10,0,0,0"/>
                                                 </Grid>
                                             </StackPanel>
                                         </Border>
@@ -714,12 +718,12 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            
+
                             <!-- Title -->
                             <TextBlock Grid.Column="0" Text="{Binding SelectedPrompt.Name}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="20" FontWeight="Black" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                            
+
                             <!-- Pin Toggle Button -->
-                            <Button Grid.Column="1" Command="{Binding TogglePinnedCommand}" Background="Transparent" BorderThickness="0" Margin="10,0,0,0" Cursor="Hand" VerticalAlignment="Center" ToolTip="{Binding Loc[PinnedTooltip]}">
+                            <Button Grid.Column="1" Command="{Binding TogglePinnedCommand}" Background="Transparent" BorderThickness="0" Margin="10,0,0,0" Cursor="Hand" VerticalAlignment="Center" ToolTip="{Binding Loc[PinnedTooltip], Mode=OneWay}">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Template">
@@ -747,7 +751,7 @@
                             </Button>
 
                             <!-- Favorite Toggle Button -->
-                            <Button Grid.Column="2" Command="{Binding ToggleFavoriteCommand}" Background="Transparent" BorderThickness="0" Margin="10,0,0,0" Cursor="Hand" VerticalAlignment="Center" ToolTip="{Binding Loc[FavoriteTooltip]}">
+                            <Button Grid.Column="2" Command="{Binding ToggleFavoriteCommand}" Background="Transparent" BorderThickness="0" Margin="10,0,0,0" Cursor="Hand" VerticalAlignment="Center" ToolTip="{Binding Loc[FavoriteTooltip], Mode=OneWay}">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Template">
@@ -803,15 +807,15 @@
                                                         <Setter Property="Foreground" Value="{DynamicResource TypeBadgePromptText}" />
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding SelectedPrompt.ItemType}" Value="Command">
-                                                        <Setter Property="Text" Value="命令" />
+                                                        <Setter Property="Text" Value="Command" />
                                                         <Setter Property="Foreground" Value="{DynamicResource TypeBadgeCommandText}" />
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding SelectedPrompt.ItemType}" Value="Snippet">
-                                                        <Setter Property="Text" Value="片段" />
+                                                        <Setter Property="Text" Value="Snippet" />
                                                         <Setter Property="Foreground" Value="{DynamicResource TypeBadgeSnippetText}" />
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding SelectedPrompt.ItemType}" Value="Note">
-                                                        <Setter Property="Text" Value="笔记" />
+                                                        <Setter Property="Text" Value="Note" />
                                                         <Setter Property="Foreground" Value="{DynamicResource TypeBadgeNoteText}" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -843,17 +847,17 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                
+
                                 <TextBlock Grid.Column="0" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" VerticalAlignment="Center">
-                                    <Run Text="{Binding Loc[CreatedAt]}" />
+                                    <Run Text="{Binding Loc[CreatedAt], Mode=OneWay}" />
                                     <Run Text="{Binding SelectedPrompt.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}, Converter={StaticResource TimeZoneConverter}}" />
                                 </TextBlock>
-                                
+
                                 <TextBlock Grid.Column="1" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" VerticalAlignment="Center" TextAlignment="Right">
-                                    <Run Text="{Binding Loc[UsageCount]}" />
+                                    <Run Text="{Binding Loc[UsageCount], Mode=OneWay}" />
                                     <Run Text="{Binding SelectedPrompt.UsageCount}" />
-                                    <Run Text="{Binding Loc[LastUsed]}" />
-                                    <Run Text="{Binding SelectedPrompt.LastUsedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}, TargetNullValue='未使用', Converter={StaticResource TimeZoneConverter}}" />
+                                    <Run Text="{Binding Loc[LastUsed], Mode=OneWay}" />
+                                    <Run Text="{Binding SelectedPrompt.LastUsedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}, TargetNullValue='Never', Converter={StaticResource TimeZoneConverter}}" />
                                 </TextBlock>
                             </Grid>
                         </StackPanel>
@@ -862,8 +866,8 @@
                         <Border Grid.Row="2" Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                                 <!-- Style={x:Null} isolates from TextBox global triggers, keeping text selectable and theme-adaptive -->
-                                <TextBox Style="{x:Null}" Text="{Binding SelectedPrompt.Content, Mode=OneWay}" 
-                                         Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeTextPrimaryBrush}" 
+                                <TextBox Style="{x:Null}" Text="{Binding SelectedPrompt.Content, Mode=OneWay}"
+                                         Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeTextPrimaryBrush}"
                                          FontSize="12.5" TextWrapping="Wrap" IsReadOnly="True" AcceptsReturn="True" CaretBrush="{DynamicResource ThemeTextPrimaryBrush}" />
                             </ScrollViewer>
                         </Border>
@@ -871,7 +875,7 @@
                         <!-- Actions row -->
                         <Grid Grid.Row="3" Margin="0,15,0,0">
                             <!-- Left: Copy action -->
-                            <Button Content="{Binding Loc[CopyContent]}" Command="{Binding CopyContentCommand}" CommandParameter="{Binding SelectedPrompt.Content}"
+                            <Button Content="{Binding Loc[CopyContent], Mode=OneWay}" Command="{Binding CopyContentCommand}" CommandParameter="{Binding SelectedPrompt.Content}"
                                     Background="{DynamicResource AccentColorBrush}" Foreground="#ffffff" BorderThickness="0" Padding="22,9" FontWeight="Bold" FontSize="12.5" HorizontalAlignment="Left" Cursor="Hand">
                                 <Button.Resources>
                                     <Style TargetType="{x:Type Border}">
@@ -891,7 +895,7 @@
 
                             <!-- Right: Edit / Delete actions -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Content="{Binding Loc[Edit]}" Command="{Binding EditCommand}" CommandParameter="{Binding SelectedPrompt}"
+                                <Button Content="{Binding Loc[Edit], Mode=OneWay}" Command="{Binding EditCommand}" CommandParameter="{Binding SelectedPrompt}"
                                         Background="{DynamicResource ThemeSecondaryButtonBgBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0" Padding="18,8" Margin="0,0,10,0" Cursor="Hand">
                                     <Button.Resources>
                                         <Style TargetType="{x:Type Border}">
@@ -909,7 +913,7 @@
                                     </Button.Style>
                                 </Button>
 
-                                <Button Content="{Binding Loc[Delete]}" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedPrompt}"
+                                <Button Content="{Binding Loc[Delete], Mode=OneWay}" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedPrompt}"
                                         Background="#b91c1c" Foreground="#ffffff" BorderThickness="0" Padding="18,8" Cursor="Hand">
                                     <Button.Resources>
                                         <Style TargetType="{x:Type Border}">
@@ -931,10 +935,11 @@
                     </Grid>
                 </Grid>
             </Grid>
-            
+
             <!-- Toast notification panel overlay -->
-            <Border x:Name="ToastBorder" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,30" 
-                    Padding="18,10" CornerRadius="8" BorderThickness="1.5" Panel.ZIndex="999" SnapsToDevicePixels="True"
+            <Border x:Name="ToastBorder" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,20,0"
+                    Padding="14,9" CornerRadius="8" BorderThickness="1.5" Panel.ZIndex="999" SnapsToDevicePixels="True"
+                    MaxWidth="320" IsHitTestVisible="False"
                     Visibility="{Binding IsToastVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <!-- Trigger border colors dynamically -->
                 <Border.Style>
@@ -953,12 +958,12 @@
                 </Border.Effect>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Icon -->
-                    <TextBlock Text="✎" Foreground="{DynamicResource AccentColorTextBrush}" FontWeight="Bold" FontSize="14.5" Margin="0,0,8,0" VerticalAlignment="Center">
+                    <TextBlock Text="✓" Foreground="{DynamicResource AccentColorTextBrush}" FontWeight="Bold" FontSize="14.5" Margin="0,0,8,0" VerticalAlignment="Center">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsToastSuccess}" Value="False">
-                                        <Setter Property="Text" Value="✔" />
+                                        <Setter Property="Text" Value="!" />
                                         <Setter Property="Foreground" Value="#ef4444" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -972,5 +977,3 @@
         </Grid>
     </Border>
 </Window>
-
-

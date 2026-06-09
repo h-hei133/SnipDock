@@ -190,6 +190,46 @@ namespace SnipDock.Tests
         }
 
         [Fact]
+        public async Task FilterSelections_UpdateDisplayNamesAfterLanguageReload()
+        {
+            var store = new MockPromptStore();
+            store.Items.Add(new PromptItem { Name = "Test Prompt", Content = "Body", ItemType = "Prompt" });
+
+            var (vm, _, settingsStore, _) = CreateViewModel(store);
+            settingsStore.Settings.Language = "en-US";
+
+            await vm.LoadPromptsAsync();
+
+            Assert.Equal("All", vm.SelectedTypeFilter);
+            Assert.NotNull(vm.SelectedTypeFilterItem);
+            Assert.Equal("All", vm.SelectedTypeFilterItem!.Key);
+            Assert.Equal("All", vm.SelectedTypeFilterItem.DisplayName);
+            Assert.Equal("__ALL_TAGS__", vm.SelectedTagFilter);
+            Assert.NotNull(vm.SelectedTagFilterItem);
+            Assert.Equal("All tags", vm.SelectedTagFilterItem!.DisplayName);
+
+            vm.IsLanguageChinese = true;
+
+            Assert.Equal("All", vm.SelectedTypeFilter);
+            Assert.NotNull(vm.SelectedTypeFilterItem);
+            Assert.Equal("All", vm.SelectedTypeFilterItem!.Key);
+            Assert.Equal("全部", vm.SelectedTypeFilterItem.DisplayName);
+            Assert.Equal("__ALL_TAGS__", vm.SelectedTagFilter);
+            Assert.NotNull(vm.SelectedTagFilterItem);
+            Assert.Equal("全部标签", vm.SelectedTagFilterItem!.DisplayName);
+
+            vm.IsLanguageEnglish = true;
+
+            Assert.Equal("All", vm.SelectedTypeFilter);
+            Assert.NotNull(vm.SelectedTypeFilterItem);
+            Assert.Equal("All", vm.SelectedTypeFilterItem!.Key);
+            Assert.Equal("All", vm.SelectedTypeFilterItem.DisplayName);
+            Assert.Equal("__ALL_TAGS__", vm.SelectedTagFilter);
+            Assert.NotNull(vm.SelectedTagFilterItem);
+            Assert.Equal("All tags", vm.SelectedTagFilterItem!.DisplayName);
+        }
+
+        [Fact]
         public async Task ToggleFavorite_SavesFavoriteState()
         {
             var store = new MockPromptStore();
