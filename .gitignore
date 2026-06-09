@@ -54,10 +54,6 @@ backups/
 *.msi
 SnipDock*.exe
 
-# Local screenshot drafts; README references docs/images instead
-/截图1.png
-/截图2.png
-
 # OS files
 Thumbs.db
 ehthumbs.db
