@@ -1,0 +1,59 @@
+# Build output
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+publish/
+artifacts/
+
+# Visual Studio / Rider
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Test output and coverage
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+coverage.opencover.xml
+coverage.cobertura.xml
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# SnipDock user data and local configuration
+prompts.json
+prompts.json.bak
+prompts.json.tmp
+settings.json
+bootstrap.json
+backups/
+
+# Local publish archives / installers
+*.zip
+*.msix
+*.msi
+SnipDock*.exe
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store

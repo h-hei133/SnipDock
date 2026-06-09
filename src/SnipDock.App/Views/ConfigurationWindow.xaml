@@ -1,0 +1,152 @@
+﻿<Window x:Class="SnipDock.App.Views.ConfigurationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding WindowTitle}" 
+        Height="280" Width="470"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize">
+    
+    <Window.Resources>
+        <!-- Premium Modern Accent Button Style (Chinese Text & Disabled Safe) -->
+        <Style x:Key="ModernAccentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource AccentColorBrush}" />
+            <Setter Property="Foreground" Value="#ffffff" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="20,8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentColorBrushMouseOver}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentColorBrushPressed}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <!-- High-visibility cool gray text on disabled button -->
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ThemeSecondaryButtonBgBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ThemeTextDisabledBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary Cancel / Neutral Button Style -->
+        <Style x:Key="ModernSecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource ThemeSecondaryButtonBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="Padding" Value="20,8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ThemeSecondaryButtonHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ThemeSecondaryButtonPressedBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource ThemeBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1.5">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Title Area (Draggable) -->
+            <Grid Grid.Row="0" MouseDown="TitleBar_MouseDown" Background="Transparent">
+                <TextBlock Text="SnipDock" Foreground="{DynamicResource AccentColorBrush}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Left" />
+                
+                <Button Content="关闭" Click="Close_Click" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent" BorderThickness="0" HorizontalAlignment="Right" FontSize="14" Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="#ef4444"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <!-- Mode-Specific Instructions -->
+            <StackPanel Grid.Row="1" Margin="0,15,0,10">
+                <TextBlock Text="{Binding WindowTitle}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <TextBlock Text="{Binding GuideText}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- Browse Path controls -->
+            <Grid Grid.Row="2" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <TextBox Text="{Binding StoragePath, UpdateSourceTrigger=PropertyChanged}" 
+                         Background="{DynamicResource ThemeInputBgBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2"
+                         Padding="10,6" FontSize="12" VerticalContentAlignment="Center" CaretBrush="{DynamicResource ThemeTextPrimaryBrush}">
+                    <TextBox.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </TextBox.Resources>
+                </TextBox>
+                
+                <Button Grid.Column="1" Content="浏览..." Command="{Binding BrowseCommand}" 
+                        Style="{StaticResource ModernSecondaryButtonStyle}" Padding="15,6" Margin="10,0,0,0" />
+            </Grid>
+
+            <!-- Footer: error and buttons -->
+            <Grid Grid.Row="3" Margin="0,10,0,0">
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#f87171" FontSize="11" 
+                           VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Left" Width="220"/>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <!-- Cancel Button (Only shown in settings modification mode) -->
+                    <Button Content="取消" Command="{Binding CancelCommand}" 
+                            Style="{StaticResource ModernSecondaryButtonStyle}" Padding="18,8" Margin="0,0,10,0"
+                            Visibility="{Binding IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    
+                    <!-- Confirm Button -->
+                    <Button Content="{Binding SaveButtonText}" Command="{Binding SaveCommand}" 
+                            Style="{StaticResource ModernAccentButtonStyle}" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

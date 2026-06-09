@@ -1,0 +1,87 @@
+<Window x:Class="SnipDock.App.Views.FloatingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SnipDock-FloatingWindow" 
+        Height="65" Width="65"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True">
+    
+    <Window.Resources>
+        <!-- Modern Theme-Adaptive Context Menu Style -->
+        <Style TargetType="ContextMenu">
+            <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentColorBrush}" />
+            <Setter Property="BorderThickness" Value="1.2" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="4">
+                            <ItemsPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="MenuItem">
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Border" 
+                                Background="Transparent" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentColorBrush}" />
+                                <Setter Property="Foreground" Value="#ffffff" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="FloatingBall" CornerRadius="32" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="2" Cursor="SizeAll"
+            Background="{DynamicResource FloatingBallBgBrush}"
+            PreviewMouseLeftButtonDown="Border_PreviewMouseLeftButtonDown" 
+            PreviewMouseMove="Border_PreviewMouseMove" 
+            PreviewMouseLeftButtonUp="Border_PreviewMouseLeftButtonUp">
+        
+        <Border.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="显示 / 隐藏面板" Command="{Binding TogglePanelCommand}" />
+                <MenuItem Header="重置悬浮球位置" Command="{Binding ResetPositionCommand}" />
+                <MenuItem Header="设置数据目录" Command="{Binding ResetStoragePathCommand}" />
+                <Separator Background="{DynamicResource ThemeBorderBrush}" Margin="2,4" />
+                <MenuItem Header="退出程序" Command="{Binding ExitCommand}" />
+            </ContextMenu>
+        </Border.ContextMenu>
+        
+        <Grid>
+            <!-- Make inner TextBlock hit-test invisible so it doesn't consume mouse events -->
+            <TextBlock Text="S" Foreground="#ffffff" FontSize="26" FontWeight="Black" IsHitTestVisible="False"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0">
+                <TextBlock.Effect>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1.5" Color="#000000" Opacity="0.5"/>
+                </TextBlock.Effect>
+            </TextBlock>
+        </Grid>
+    </Border>
+</Window>
