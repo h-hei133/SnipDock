@@ -34,8 +34,6 @@ SnipDock 是一个 **local-first** 的本地优先工具。它不提供云同步
 
 ## 截图
 
-截图文件会后续补充到 `docs/images/` 目录。
-
 ![image_1](./docs/images/image_1.png)
 
 ![image_2](./docs/images/image_2.png)

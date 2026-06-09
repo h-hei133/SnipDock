@@ -34,8 +34,6 @@ Command items are copy-only. SnipDock never automatically executes saved command
 
 ## Screenshots
 
-Screenshots will be added under `docs/images/`.
-
 ![image_1](./docs/images/image_1.png)
 
 ![image_2](./docs/images/image_2.png)
