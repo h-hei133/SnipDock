@@ -2,13 +2,13 @@
 
 SnipDock is a lightweight local Windows snippet manager for quickly saving, searching, and copying prompts, commands, code snippets, notes, and frequently used information.
 
-Current release: **v0.1.0-beta**. This is the first beta release for early public testing.
+Current release: **v0.1.0-beta**. This is an early beta release for public testing and feedback.
 
-中文文档：[README.zh-CN.md](./README.zh-CN.md)
+Chinese README: [README.zh-CN.md](./README.zh-CN.md)
 
 ## Positioning
 
-SnipDock is a **local-first** desktop utility. It does not provide cloud sync, does not upload user data, and is not a command runner.
+SnipDock is a **local-first** Windows desktop utility. It stores data in local files, does not upload user data to the cloud, and is not a command runner.
 
 Command items are copy-only. SnipDock never automatically executes saved commands.
 
@@ -30,13 +30,13 @@ Command items are copy-only. SnipDock never automatically executes saved command
 - Automatic backups and backup restore
 - Windows startup launch
 - Local JSON safe writes
-- Compatibility migration from the previous PromptShelf configuration
+- Compatible migration from previous PromptShelf configuration
 
 ## Screenshots
 
-![image_1](./docs/images/image_1.png)
+![screenshot 1](./docs/images/截图1.png)
 
-![image_2](./docs/images/image_2.png)
+![screenshot 2](./docs/images/截图2.png)
 
 ## Download and Run
 
@@ -86,6 +86,16 @@ On first launch, SnipDock asks the user to choose a local data directory. User i
 - Automatic backups: `backups\`
 - App logs: `logs\`
 - Local settings: `settings.json`
+
+## Migration From PromptShelf
+
+SnipDock keeps compatibility with the previous PromptShelf bootstrap configuration:
+
+- Reads legacy `%APPDATA%\PromptShelf\bootstrap.json`
+- Migrates bootstrap settings to `%APPDATA%\SnipDock\bootstrap.json`
+- Does not delete legacy configuration
+- Does not move or rename the user-selected data directory
+- Keeps the `prompts.json` filename for compatibility
 
 ## Privacy
 

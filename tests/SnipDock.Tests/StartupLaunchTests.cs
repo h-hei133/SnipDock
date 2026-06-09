@@ -108,7 +108,7 @@ namespace SnipDock.Tests
             var service = new StartupLaunchService(fakeRegistry, logger);
             
             var runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            var legacyVal = "\"C:\\Path\\To\\Old\\PromptShelf.exe\" --startup";
+            var legacyVal = "\"%LOCALAPPDATA%\\PromptShelf\\PromptShelf.exe\" --startup";
             fakeRegistry.SetValue(runKey, "PromptShelf", legacyVal);
             
             var isEnabled = await service.IsEnabledAsync();
@@ -130,7 +130,7 @@ namespace SnipDock.Tests
             var service = new StartupLaunchService(fakeRegistry, logger);
             
             var runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            var legacyVal = "\"C:\\Path\\To\\Old\\PromptShelf.exe\" --startup";
+            var legacyVal = "\"%LOCALAPPDATA%\\PromptShelf\\PromptShelf.exe\" --startup";
             fakeRegistry.SetValue(runKey, "PromptShelf", legacyVal);
             
             fakeRegistry.ThrowOnWrite = true;
@@ -155,7 +155,7 @@ namespace SnipDock.Tests
             var service = new StartupLaunchService(fakeRegistry, logger);
             
             var runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            var legacyVal = "\"C:\\Path\\To\\Old\\PromptShelf.exe\" --startup";
+            var legacyVal = "\"%LOCALAPPDATA%\\PromptShelf\\PromptShelf.exe\" --startup";
             fakeRegistry.SetValue(runKey, "PromptShelf", legacyVal);
             
             fakeRegistry.SimulateVerifyFailure = true;

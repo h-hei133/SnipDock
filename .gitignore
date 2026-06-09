@@ -27,9 +27,11 @@ TestResults/
 coverage/
 coverage.opencover.xml
 coverage.cobertura.xml
+*.binlog
 
 # NuGet
 *.nupkg
+*.snupkg
 packages/
 project.lock.json
 
@@ -47,6 +49,7 @@ prompts.json.tmp
 settings.json
 bootstrap.json
 backups/
+*.local.json
 
 # Local publish archives / installers
 *.zip
