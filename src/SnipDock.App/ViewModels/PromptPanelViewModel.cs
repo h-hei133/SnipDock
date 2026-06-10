@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
 using SnipDock.Core.Interfaces;
 using SnipDock.Core.Models;
@@ -57,6 +58,8 @@ namespace SnipDock.App.ViewModels
         private string _editingItemType = "Prompt";
         private string _editorTitle = string.Empty;
         private string _editorError = string.Empty;
+        private bool _isMarkdownPreviewEnabled = true;
+        private bool _isEditorMarkdownPreviewEnabled = false;
 
         // Settings and Toast properties
         private bool _isSettingsOpen;
@@ -97,6 +100,8 @@ namespace SnipDock.App.ViewModels
             SavePromptCommand = new RelayCommand(async () => await OnSavePromptAsync(), CanSavePrompt);
             CancelEditCommand = new RelayCommand(OnCancelEdit);
             CopyContentCommand = new RelayCommand<string>(OnCopyContent);
+            ToggleMarkdownPreviewCommand = new RelayCommand(ToggleMarkdownPreview);
+            ToggleEditorMarkdownPreviewCommand = new RelayCommand(ToggleEditorMarkdownPreview);
             ToggleSettingsCommand = new RelayCommand(OnToggleSettings);
             ChangeThemeCommand = new RelayCommand<string>(OnChangeTheme);
             ChangeAccentColorCommand = new RelayCommand<string>(OnChangeAccentColor);
@@ -264,6 +269,7 @@ namespace SnipDock.App.ViewModels
                     {
                         Serilog.Log.Information("用户取消了备份恢复");
                     }
+                    OnPropertyChanged(nameof(DetailMarkdownPreviewDocument));
                     NotifyStateProperties();
                 }
             }
@@ -312,7 +318,13 @@ namespace SnipDock.App.ViewModels
         public string EditingContent
         {
             get => _editingContent;
-            set => SetProperty(ref _editingContent, value);
+            set
+            {
+                if (SetProperty(ref _editingContent, value))
+                {
+                    OnPropertyChanged(nameof(EditorMarkdownPreviewDocument));
+                }
+            }
         }
 
         public string EditorTitle
@@ -398,6 +410,40 @@ namespace SnipDock.App.ViewModels
             get => SelectedPrompt != null && !IsEditing && !IsSettingsOpen;
         }
 
+        public bool IsMarkdownPreviewEnabled
+        {
+            get => _isMarkdownPreviewEnabled;
+            set
+            {
+                if (SetProperty(ref _isMarkdownPreviewEnabled, value))
+                {
+                    OnPropertyChanged(nameof(IsMarkdownSourceVisible));
+                    OnPropertyChanged(nameof(DetailMarkdownPreviewDocument));
+                }
+            }
+        }
+
+        public bool IsMarkdownSourceVisible => !IsMarkdownPreviewEnabled;
+
+        public bool IsEditorMarkdownPreviewEnabled
+        {
+            get => _isEditorMarkdownPreviewEnabled;
+            set
+            {
+                if (SetProperty(ref _isEditorMarkdownPreviewEnabled, value))
+                {
+                    OnPropertyChanged(nameof(IsEditorMarkdownSourceVisible));
+                    OnPropertyChanged(nameof(EditorMarkdownPreviewDocument));
+                }
+            }
+        }
+
+        public bool IsEditorMarkdownSourceVisible => !IsEditorMarkdownPreviewEnabled;
+
+        public FlowDocument DetailMarkdownPreviewDocument => MarkdownPreviewBuilder.Build(SelectedPrompt?.Content);
+
+        public FlowDocument EditorMarkdownPreviewDocument => MarkdownPreviewBuilder.Build(EditingContent);
+
         private void NotifyStateProperties()
         {
             OnPropertyChanged(nameof(IsSettingsPanelVisible));
@@ -405,6 +451,7 @@ namespace SnipDock.App.ViewModels
             OnPropertyChanged(nameof(IsEditorVisible));
             OnPropertyChanged(nameof(IsEmptyStateVisible));
             OnPropertyChanged(nameof(IsDetailVisible));
+            OnPropertyChanged(nameof(DetailMarkdownPreviewDocument));
         }
 
         // Boolean mappings for view bindings (eliminates need for converters)
@@ -517,6 +564,8 @@ namespace SnipDock.App.ViewModels
         public ICommand SavePromptCommand { get; }
         public ICommand CancelEditCommand { get; }
         public ICommand CopyContentCommand { get; }
+        public ICommand ToggleMarkdownPreviewCommand { get; }
+        public ICommand ToggleEditorMarkdownPreviewCommand { get; }
         public ICommand ToggleSettingsCommand { get; }
         public ICommand ChangeThemeCommand { get; }
         public ICommand ChangeAccentColorCommand { get; }
@@ -604,7 +653,7 @@ namespace SnipDock.App.ViewModels
                 var informationalVersion = attribute?.InformationalVersion;
 
                 return string.IsNullOrWhiteSpace(informationalVersion)
-                    ? "v0.3.0"
+                    ? "v0.4.0"
                     : $"v{informationalVersion}";
             }
         }
@@ -828,6 +877,7 @@ namespace SnipDock.App.ViewModels
             EditingTagsText = string.Empty;
             EditingContent = string.Empty;
             EditingItemType = "Prompt";
+            IsEditorMarkdownPreviewEnabled = false;
             EditorError = string.Empty;
             
             IsSettingsOpen = false;
@@ -843,6 +893,7 @@ namespace SnipDock.App.ViewModels
             EditingTagsText = string.Join(", ", prompt.Tags); // Separation format display for editing
             EditingContent = prompt.Content;
             EditingItemType = prompt.ItemType;
+            IsEditorMarkdownPreviewEnabled = false;
             EditorError = string.Empty;
             
             IsSettingsOpen = false;
@@ -1417,6 +1468,16 @@ namespace SnipDock.App.ViewModels
         private void OnChangeStoragePath()
         {
             ChangeStoragePathRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ToggleMarkdownPreview()
+        {
+            IsMarkdownPreviewEnabled = !IsMarkdownPreviewEnabled;
+        }
+
+        private void ToggleEditorMarkdownPreview()
+        {
+            IsEditorMarkdownPreviewEnabled = !IsEditorMarkdownPreviewEnabled;
         }
 
         private void OnOpenReleases()

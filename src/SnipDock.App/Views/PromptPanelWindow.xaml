@@ -417,10 +417,21 @@
                                            Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
                                 <!-- Content -->
-                                <TextBlock Text="{Binding Loc[ItemContent], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding EditingContent, UpdateSourceTrigger=PropertyChanged}"
-                                         AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" Height="185"
-                                         Padding="10" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                                <Grid Margin="0,0,0,5">
+                                    <TextBlock Text="{Binding Loc[ItemContent], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" VerticalAlignment="Center"/>
+                                    <Button Content="{Binding Loc[MarkdownPreview], Mode=OneWay}" Command="{Binding ToggleEditorMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsEditorMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <Button Content="{Binding Loc[MarkdownSource], Mode=OneWay}" Command="{Binding ToggleEditorMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsEditorMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </Grid>
+                                <Grid Height="185">
+                                    <TextBox Text="{Binding EditingContent, UpdateSourceTrigger=PropertyChanged}"
+                                             AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap"
+                                             Padding="10" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             Visibility="{Binding IsEditorMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8"
+                                            Visibility="{Binding IsEditorMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <FlowDocumentScrollViewer Document="{Binding EditorMarkdownPreviewDocument}" Padding="10" VerticalScrollBarVisibility="Auto" />
+                                    </Border>
+                                </Grid>
                             </StackPanel>
                         </ScrollViewer>
 
@@ -870,14 +881,30 @@
                         </StackPanel>
 
                         <!-- Content view box (Uses custom ScrollBars cleanly) -->
-                        <Border Grid.Row="2" Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
-                                <!-- Style={x:Null} isolates from TextBox global triggers, keeping text selectable and theme-adaptive -->
-                                <TextBox Style="{x:Null}" Text="{Binding SelectedPrompt.Content, Mode=OneWay}"
-                                         Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeTextPrimaryBrush}"
-                                         FontSize="12.5" TextWrapping="Wrap" IsReadOnly="True" AcceptsReturn="True" CaretBrush="{DynamicResource ThemeTextPrimaryBrush}" />
-                            </ScrollViewer>
-                        </Border>
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,6">
+                                <TextBlock Text="{Binding Loc[ItemContent], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" VerticalAlignment="Center"/>
+                                <Button Content="{Binding Loc[MarkdownPreview], Mode=OneWay}" Command="{Binding ToggleMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <Button Content="{Binding Loc[MarkdownSource], Mode=OneWay}" Command="{Binding ToggleMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </Grid>
+
+                            <Border Grid.Row="1" Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8">
+                                <Grid>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12" Visibility="{Binding IsMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <!-- Style={x:Null} isolates from TextBox global triggers, keeping text selectable and theme-adaptive -->
+                                        <TextBox Style="{x:Null}" Text="{Binding SelectedPrompt.Content, Mode=OneWay}"
+                                                 Background="Transparent" BorderThickness="0" Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                 FontSize="12.5" TextWrapping="Wrap" IsReadOnly="True" AcceptsReturn="True" CaretBrush="{DynamicResource ThemeTextPrimaryBrush}" />
+                                    </ScrollViewer>
+                                    <FlowDocumentScrollViewer Document="{Binding DetailMarkdownPreviewDocument}" Padding="12" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </Grid>
+                            </Border>
+                        </Grid>
 
                         <!-- Actions row -->
                         <Grid Grid.Row="3" Margin="0,15,0,0">

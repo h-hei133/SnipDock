@@ -549,6 +549,37 @@ namespace SnipDock.Tests
         }
 
         [Fact]
+        public async Task MarkdownPreviewToggles_DoNotChangeContent()
+        {
+            var store = new MockPromptStore();
+            var item = new PromptItem { Name = "Markdown", Content = "# Title\n\nBody", ItemType = "Note" };
+            store.Items.Add(item);
+
+            var (vm, _, _, _) = CreateViewModel(store);
+            await vm.LoadPromptsAsync();
+
+            vm.SelectedPrompt = vm.Prompts[0];
+            Assert.True(vm.IsMarkdownPreviewEnabled);
+            Assert.False(vm.IsMarkdownSourceVisible);
+
+            vm.ToggleMarkdownPreviewCommand.Execute(null);
+
+            Assert.False(vm.IsMarkdownPreviewEnabled);
+            Assert.True(vm.IsMarkdownSourceVisible);
+            Assert.Equal("# Title\n\nBody", vm.SelectedPrompt!.Content);
+
+            vm.EditCommand.Execute(vm.SelectedPrompt);
+            Assert.False(vm.IsEditorMarkdownPreviewEnabled);
+            Assert.True(vm.IsEditorMarkdownSourceVisible);
+
+            vm.ToggleEditorMarkdownPreviewCommand.Execute(null);
+
+            Assert.True(vm.IsEditorMarkdownPreviewEnabled);
+            Assert.False(vm.IsEditorMarkdownSourceVisible);
+            Assert.Equal("# Title\n\nBody", vm.EditingContent);
+        }
+
+        [Fact]
         public async Task QueryAsync_SortingLogic_PrioritizesPinnedFirst()
         {
             var store = new MockPromptStore();
