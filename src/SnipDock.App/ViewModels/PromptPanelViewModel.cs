@@ -36,6 +36,9 @@ namespace SnipDock.App.ViewModels
         private string _searchText = string.Empty;
         private PromptItem? _selectedPrompt;
         private ObservableCollection<PromptItem> _prompts = new();
+        private ObservableCollection<PromptItem> _selectedBatchItems = new();
+        private string _batchTagText = string.Empty;
+        private string _batchItemType = "Prompt";
 
         // Phase 3 Filtering properties
         private string _selectedTypeFilter = "All";
@@ -128,6 +131,12 @@ namespace SnipDock.App.ViewModels
             RenameTagCommand = new RelayCommand(async () => await OnRenameTagAsync(), () => IsTagSelected && !string.IsNullOrWhiteSpace(TargetTagName));
             MergeTagsCommand = new RelayCommand(async () => await OnMergeTagsAsync(), () => IsTagSelected && !string.IsNullOrWhiteSpace(TargetTagName));
             CleanUnusedTagsCommand = new RelayCommand(OnCleanUnusedTags);
+            BatchDeleteCommand = new RelayCommand(async () => await OnBatchDeleteAsync(), () => HasBatchSelection);
+            BatchAddTagCommand = new RelayCommand(async () => await OnBatchAddTagAsync(), () => HasBatchSelection && !string.IsNullOrWhiteSpace(BatchTagText));
+            BatchSetTypeCommand = new RelayCommand(async () => await OnBatchSetTypeAsync(), () => HasBatchSelection);
+            BatchFavoriteCommand = new RelayCommand(async () => await OnBatchFavoriteAsync(), () => HasBatchSelection);
+            BatchPinCommand = new RelayCommand(async () => await OnBatchPinAsync(), () => HasBatchSelection);
+            ScanDuplicatesCommand = new RelayCommand(async () => await OnScanDuplicatesAsync());
             CopyPathCommand = new RelayCommand<string>(path => {
                 if (!string.IsNullOrEmpty(path)) {
                     try {
@@ -279,6 +288,42 @@ namespace SnipDock.App.ViewModels
         {
             get => _prompts;
             set => SetProperty(ref _prompts, value);
+        }
+
+        public ObservableCollection<PromptItem> SelectedBatchItems
+        {
+            get => _selectedBatchItems;
+            private set
+            {
+                if (SetProperty(ref _selectedBatchItems, value))
+                {
+                    NotifyBatchSelectionChanged();
+                }
+            }
+        }
+
+        public int BatchSelectionCount => SelectedBatchItems.Count;
+
+        public bool HasBatchSelection => BatchSelectionCount > 1;
+
+        public string BatchSelectionSummary => string.Format(Loc["BatchSelectionSummary"], BatchSelectionCount);
+
+        public string BatchTagText
+        {
+            get => _batchTagText;
+            set
+            {
+                if (SetProperty(ref _batchTagText, value))
+                {
+                    CommandManager.InvalidateRequerySuggested();
+                }
+            }
+        }
+
+        public string BatchItemType
+        {
+            get => _batchItemType;
+            set => SetProperty(ref _batchItemType, string.IsNullOrWhiteSpace(value) ? "Prompt" : value);
         }
 
         // Editor bindings
@@ -586,6 +631,12 @@ namespace SnipDock.App.ViewModels
         public ICommand MergeTagsCommand { get; }
         public ICommand CleanUnusedTagsCommand { get; }
         public ICommand CopyPathCommand { get; }
+        public ICommand BatchDeleteCommand { get; }
+        public ICommand BatchAddTagCommand { get; }
+        public ICommand BatchSetTypeCommand { get; }
+        public ICommand BatchFavoriteCommand { get; }
+        public ICommand BatchPinCommand { get; }
+        public ICommand ScanDuplicatesCommand { get; }
 
         // Phase 5 Properties
         private int _dataSchemaVersion = 1;
@@ -653,7 +704,7 @@ namespace SnipDock.App.ViewModels
                 var informationalVersion = attribute?.InformationalVersion;
 
                 return string.IsNullOrWhiteSpace(informationalVersion)
-                    ? "v0.4.0"
+                    ? "v0.5.0"
                     : $"v{informationalVersion}";
             }
         }
@@ -1243,10 +1294,7 @@ namespace SnipDock.App.ViewModels
             IsToastVisible = true;
             
             int currentId = ++_toastId;
-            Task.Delay(1500).ContinueWith(t =>
-            {
-                if (currentId == _toastId) IsToastVisible = false;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+            _ = HideToastAfterDelayAsync(currentId, 1500);
         }
 
         private void ShowErrorToast(string message)
@@ -1258,10 +1306,25 @@ namespace SnipDock.App.ViewModels
             IsToastVisible = true;
             
             int currentId = ++_toastId;
-            Task.Delay(2500).ContinueWith(t =>
+            _ = HideToastAfterDelayAsync(currentId, 2500);
+        }
+
+        private async Task HideToastAfterDelayAsync(int toastId, int delayMilliseconds)
+        {
+            await Task.Delay(delayMilliseconds);
+            if (toastId != _toastId) return;
+
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
             {
-                if (currentId == _toastId) IsToastVisible = false;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+                await dispatcher.InvokeAsync(() =>
+                {
+                    if (toastId == _toastId) IsToastVisible = false;
+                });
+                return;
+            }
+
+            IsToastVisible = false;
         }
 
         private void OnToggleSettings()
@@ -1478,6 +1541,105 @@ namespace SnipDock.App.ViewModels
         private void ToggleEditorMarkdownPreview()
         {
             IsEditorMarkdownPreviewEnabled = !IsEditorMarkdownPreviewEnabled;
+        }
+
+        public void SetSelectedBatchItems(IEnumerable<PromptItem> selectedItems)
+        {
+            SelectedBatchItems = new ObservableCollection<PromptItem>(selectedItems ?? Enumerable.Empty<PromptItem>());
+        }
+
+        private void NotifyBatchSelectionChanged()
+        {
+            OnPropertyChanged(nameof(BatchSelectionCount));
+            OnPropertyChanged(nameof(HasBatchSelection));
+            OnPropertyChanged(nameof(BatchSelectionSummary));
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        private async Task OnBatchDeleteAsync()
+        {
+            var ids = SelectedBatchItems.Select(item => item.Id).ToList();
+            if (ids.Count <= 1) return;
+
+            if (!ConfirmBatchAction(Loc["BatchDeleteConfirmTitle"], string.Format(Loc["BatchDeleteConfirmMessage"], ids.Count)))
+            {
+                return;
+            }
+
+            await _promptService.DeleteRangeAsync(ids);
+            SelectedPrompt = null;
+            SetSelectedBatchItems(Array.Empty<PromptItem>());
+            await ExecuteSearchAsync();
+            ShowSuccessToast(string.Format(Loc["BatchUpdated"], ids.Count));
+        }
+
+        private async Task OnBatchAddTagAsync()
+        {
+            var tag = BatchTagText.Trim();
+            if (string.IsNullOrWhiteSpace(tag)) return;
+
+            var ids = SelectedBatchItems.Select(item => item.Id).ToList();
+            await _promptService.UpdateRangeAsync(ids, item =>
+            {
+                if (!item.Tags.Any(existing => existing.Equals(tag, StringComparison.OrdinalIgnoreCase)))
+                {
+                    item.Tags.Add(tag);
+                }
+            });
+
+            BatchTagText = string.Empty;
+            await UpdateDynamicTagsAsync();
+            await ExecuteSearchAsync();
+            ShowSuccessToast(string.Format(Loc["BatchUpdated"], ids.Count));
+        }
+
+        private async Task OnBatchSetTypeAsync()
+        {
+            var ids = SelectedBatchItems.Select(item => item.Id).ToList();
+            await _promptService.UpdateRangeAsync(ids, item => item.ItemType = BatchItemType);
+            await ExecuteSearchAsync();
+            ShowSuccessToast(string.Format(Loc["BatchUpdated"], ids.Count));
+        }
+
+        private async Task OnBatchFavoriteAsync()
+        {
+            var ids = SelectedBatchItems.Select(item => item.Id).ToList();
+            await _promptService.UpdateRangeAsync(ids, item => item.IsFavorite = true);
+            await ExecuteSearchAsync();
+            ShowSuccessToast(string.Format(Loc["BatchUpdated"], ids.Count));
+        }
+
+        private async Task OnBatchPinAsync()
+        {
+            var ids = SelectedBatchItems.Select(item => item.Id).ToList();
+            await _promptService.UpdateRangeAsync(ids, item => item.IsPinned = true);
+            await ExecuteSearchAsync();
+            ShowSuccessToast(string.Format(Loc["BatchUpdated"], ids.Count));
+        }
+
+        private bool ConfirmBatchAction(string title, string message)
+        {
+            var owner = Application.Current?.Windows.OfType<PromptPanelWindow>().FirstOrDefault();
+            return owner == null || ConfirmDialogWindow.Show(owner, title, message, Loc["Confirm"], Loc["Cancel"]);
+        }
+
+        private async Task OnScanDuplicatesAsync()
+        {
+            var all = await _promptService.GetAllAsync();
+            var groups = DuplicateDetectionService.FindDuplicates(all);
+            var duplicatedItems = groups.SelectMany(group => group.Items.Select(item => item.Id)).Distinct().Count();
+            var message = groups.Count == 0
+                ? Loc["NoDuplicatesFound"]
+                : string.Format(Loc["DuplicatesFound"], groups.Count, duplicatedItems);
+
+            var owner = Application.Current?.Windows.OfType<PromptPanelWindow>().FirstOrDefault();
+            if (owner == null)
+            {
+                ShowSuccessToast(message);
+                return;
+            }
+
+            System.Windows.MessageBox.Show(owner, message, Loc["DuplicateScanTitle"], MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void OnOpenReleases()

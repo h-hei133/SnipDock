@@ -580,6 +580,34 @@ namespace SnipDock.Tests
         }
 
         [Fact]
+        public async Task BatchSelection_AddTagAndSetType_UpdateSelectedItems()
+        {
+            var store = new MockPromptStore();
+            var item1 = new PromptItem { Name = "One", Content = "Body", ItemType = "Prompt" };
+            var item2 = new PromptItem { Name = "Two", Content = "Body", ItemType = "Prompt" };
+            store.Items.AddRange(new[] { item1, item2 });
+
+            var (vm, _, _, _) = CreateViewModel(store);
+            await vm.LoadPromptsAsync();
+            vm.SetSelectedBatchItems(vm.Prompts);
+
+            Assert.True(vm.HasBatchSelection);
+
+            vm.BatchTagText = "batch";
+            vm.BatchAddTagCommand.Execute(null);
+            await Task.Delay(50);
+
+            Assert.All(store.Items, item => Assert.Contains("batch", item.Tags));
+
+            vm.SetSelectedBatchItems(vm.Prompts);
+            vm.BatchItemType = "Note";
+            vm.BatchSetTypeCommand.Execute(null);
+            await Task.Delay(50);
+
+            Assert.All(store.Items, item => Assert.Equal("Note", item.ItemType));
+        }
+
+        [Fact]
         public async Task QueryAsync_SortingLogic_PrioritizesPinnedFirst()
         {
             var store = new MockPromptStore();

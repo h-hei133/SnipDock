@@ -88,6 +88,50 @@ namespace SnipDock.Tests
         }
 
         [Fact]
+        public async Task DeleteRangeAsync_RemovesSelectedItemsWithSingleSave()
+        {
+            var mockStore = new MockPromptStore();
+            var service = new PromptService(mockStore);
+            await service.InitializeAsync();
+
+            var item1 = new PromptItem { Name = "One" };
+            var item2 = new PromptItem { Name = "Two" };
+            var item3 = new PromptItem { Name = "Three" };
+            await service.AddAsync(item1);
+            await service.AddAsync(item2);
+            await service.AddAsync(item3);
+
+            await service.DeleteRangeAsync(new[] { item1.Id, item3.Id });
+
+            var all = await service.GetAllAsync();
+            Assert.Single(all);
+            Assert.Equal("Two", all[0].Name);
+        }
+
+        [Fact]
+        public async Task UpdateRangeAsync_UpdatesSelectedItemsWithSingleSave()
+        {
+            var mockStore = new MockPromptStore();
+            var service = new PromptService(mockStore);
+            await service.InitializeAsync();
+
+            var item1 = new PromptItem { Name = "One", ItemType = "Prompt" };
+            var item2 = new PromptItem { Name = "Two", ItemType = "Prompt" };
+            await service.AddAsync(item1);
+            await service.AddAsync(item2);
+
+            await service.UpdateRangeAsync(new[] { item1.Id, item2.Id }, item =>
+            {
+                item.ItemType = "Note";
+                item.IsFavorite = true;
+            });
+
+            var all = await service.GetAllAsync();
+            Assert.All(all, item => Assert.Equal("Note", item.ItemType));
+            Assert.All(all, item => Assert.True(item.IsFavorite));
+        }
+
+        [Fact]
         public async Task TogglePinned_DoesNotModifyUpdatedAt_AndSavesStateToStore()
         {
             var mockStore = new MockPromptStore();

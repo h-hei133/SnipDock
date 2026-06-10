@@ -2,7 +2,7 @@
 
 SnipDock is a lightweight local Windows snippet manager for quickly saving, searching, and copying prompts, commands, code snippets, notes, and frequently used information.
 
-Current release: **v0.4.0**. This release adds Markdown preview while keeping SnipDock local-first and lightweight.
+Current release: **v0.5.0**. This release adds batch management and duplicate detection while keeping SnipDock local-first and lightweight.
 
 Chinese README: [README.zh-CN.md](./README.zh-CN.md)
 
@@ -32,6 +32,7 @@ Command items are copy-only. SnipDock never automatically executes saved command
 - Local JSON safe writes
 - Template variables such as `{{name}}`, `{{content}}`, and `{{style}}`
 - Markdown preview for reading prompts, snippets, and notes
+- Batch selection, batch tagging/type changes, and duplicate detection
 
 ## Screenshots
 
@@ -43,7 +44,7 @@ Command items are copy-only. SnipDock never automatically executes saved command
 
 SnipDock provides two release formats:
 
-- Installer: run `SnipDock-Setup-v0.4.0.exe` and follow the setup wizard.
+- Installer: run `SnipDock-Setup-v0.5.0.exe` and follow the setup wizard.
 - Zip / portable package: extract the package and run:
 
 ```text
@@ -141,7 +142,6 @@ Use JSON export for manual archives, or restore from the automatic backup folder
 
 ## Roadmap
 
-- v0.4.0: Markdown preview
 - v0.5.0: batch management and duplicate detection
 
 ## License

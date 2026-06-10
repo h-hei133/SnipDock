@@ -241,6 +241,41 @@ namespace SnipDock.Tests
             Assert.Equal("[\"current data before import\"]", await File.ReadAllTextAsync(backupFile));
         }
 
+        [Fact]
+        public async Task ImportAsync_SkipsPossibleDuplicatesByTitleOrContentHash()
+        {
+            var store = new MockPromptStore();
+            store.Items.Add(new PromptItem { Name = "Existing title", ItemType = "Prompt", Content = "Existing body" });
+            store.Items.Add(new PromptItem { Name = "Existing content holder", ItemType = "Note", Content = "Same body" });
+
+            var service = new PromptService(store);
+            await service.InitializeAsync();
+
+            var tempStoragePath = Path.Combine(Path.GetTempPath(), "SnipDock_DuplicateImportTests_" + Guid.NewGuid());
+            Directory.CreateDirectory(tempStoragePath);
+            _tempDirectories.Add(tempStoragePath);
+
+            var backupService = new BackupService(tempStoragePath);
+            var exchangeService = new ShelfImportExportService(service, backupService);
+            var importFile = Path.Combine(tempStoragePath, "import.json");
+            var importItems = new List<PromptItem>
+            {
+                new() { Id = Guid.NewGuid(), Name = " existing title ", ItemType = "Command", Content = "Different body" },
+                new() { Id = Guid.NewGuid(), Name = "Unique title", ItemType = "Prompt", Content = "Same body" },
+                new() { Id = Guid.NewGuid(), Name = "Brand new", ItemType = "Prompt", Content = "Brand new body" }
+            };
+
+            await File.WriteAllTextAsync(importFile, System.Text.Json.JsonSerializer.Serialize(importItems));
+
+            var result = await exchangeService.ImportAsync(importFile);
+
+            Assert.Equal(1, result.ImportedCount);
+            Assert.Equal(2, result.SkippedCount);
+            var all = await service.GetAllAsync();
+            Assert.Contains(all, item => item.Name == "Brand new");
+            Assert.DoesNotContain(all, item => item.Name == "Unique title");
+        }
+
         public void Dispose()
         {
             foreach (var path in _tempDirectories)

@@ -52,6 +52,12 @@ namespace SnipDock.Core.Services
 
             var allItems = await _promptService.GetAllAsync();
             var existingIds = new HashSet<Guid>(allItems.Select(p => p.Id));
+            var existingTitles = new HashSet<string>(
+                allItems.Select(p => DuplicateDetectionService.NormalizeTitle(p.Name)),
+                StringComparer.OrdinalIgnoreCase);
+            var existingContentHashes = new HashSet<string>(
+                allItems.Where(p => !string.IsNullOrWhiteSpace(p.Content)).Select(p => DuplicateDetectionService.ComputeContentHash(p.Content)),
+                StringComparer.OrdinalIgnoreCase);
 
             foreach (var item in items)
             {
@@ -86,6 +92,17 @@ namespace SnipDock.Core.Services
                 if (item.Content == null)
                 {
                     item.Content = string.Empty;
+                }
+
+                var normalizedTitle = DuplicateDetectionService.NormalizeTitle(item.Name);
+                var contentHash = string.IsNullOrWhiteSpace(item.Content)
+                    ? string.Empty
+                    : DuplicateDetectionService.ComputeContentHash(item.Content);
+                if (existingTitles.Contains(normalizedTitle) ||
+                    (!string.IsNullOrEmpty(contentHash) && existingContentHashes.Contains(contentHash)))
+                {
+                    result.SkippedCount++;
+                    continue;
                 }
 
                 // 规则 3：标签去重和清洗
@@ -136,6 +153,11 @@ namespace SnipDock.Core.Services
                 else
                 {
                     await _promptService.AddAsync(item);
+                    existingTitles.Add(normalizedTitle);
+                    if (!string.IsNullOrEmpty(contentHash))
+                    {
+                        existingContentHashes.Add(contentHash);
+                    }
                     result.ImportedCount++;
                 }
             }

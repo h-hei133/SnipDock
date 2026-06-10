@@ -203,6 +203,50 @@ namespace SnipDock.Core.Services
             }
         }
 
+        public async Task DeleteRangeAsync(IEnumerable<Guid> ids)
+        {
+            if (ids == null) throw new ArgumentNullException(nameof(ids));
+
+            await _semaphore.WaitAsync();
+            try
+            {
+                var idSet = ids.ToHashSet();
+                if (idSet.Count == 0) return;
+
+                _prompts.RemoveAll(p => idSet.Contains(p.Id));
+                await _promptStore.SaveAsync(_prompts);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        public async Task UpdateRangeAsync(IEnumerable<Guid> ids, Action<PromptItem> update)
+        {
+            if (ids == null) throw new ArgumentNullException(nameof(ids));
+            if (update == null) throw new ArgumentNullException(nameof(update));
+
+            await _semaphore.WaitAsync();
+            try
+            {
+                var idSet = ids.ToHashSet();
+                if (idSet.Count == 0) return;
+
+                var now = DateTime.UtcNow;
+                foreach (var prompt in _prompts.Where(p => idSet.Contains(p.Id)))
+                {
+                    update(prompt);
+                    prompt.UpdatedAt = now;
+                }
+                await _promptStore.SaveAsync(_prompts);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
         public async Task ImportRangeAsync(IEnumerable<PromptItem> items)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));

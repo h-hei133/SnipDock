@@ -176,6 +176,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -259,8 +260,31 @@
                         </Button>
                     </Grid>
 
+                    <!-- Batch Actions -->
+                    <Border Grid.Row="3" Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10"
+                            Visibility="{Binding HasBatchSelection, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding BatchSelectionSummary}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <WrapPanel>
+                                <TextBox Text="{Binding BatchTagText, UpdateSourceTrigger=PropertyChanged}" Width="105" Height="28" Padding="6,3" Margin="0,0,6,6"/>
+                                <Button Content="{Binding Loc[BatchAddTag], Mode=OneWay}" Command="{Binding BatchAddTagCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
+                                <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding BatchItemType, UpdateSourceTrigger=PropertyChanged}" Width="82" Height="28" Margin="0,0,6,6">
+                                    <ComboBoxItem Content="Prompt" Tag="Prompt"/>
+                                    <ComboBoxItem Content="{Binding Loc[Command], Mode=OneWay}" Tag="Command"/>
+                                    <ComboBoxItem Content="{Binding Loc[Snippet], Mode=OneWay}" Tag="Snippet"/>
+                                    <ComboBoxItem Content="{Binding Loc[Note], Mode=OneWay}" Tag="Note"/>
+                                </ComboBox>
+                                <Button Content="{Binding Loc[BatchSetType], Mode=OneWay}" Command="{Binding BatchSetTypeCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
+                                <Button Content="{Binding Loc[BatchFavorite], Mode=OneWay}" Command="{Binding BatchFavoriteCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
+                                <Button Content="{Binding Loc[BatchPin], Mode=OneWay}" Command="{Binding BatchPinCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
+                                <Button Content="{Binding Loc[BatchDelete], Mode=OneWay}" Command="{Binding BatchDeleteCommand}" Background="#b91c1c" Foreground="#ffffff" BorderThickness="0" Padding="8,4" FontSize="11" Margin="0,0,0,6"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Prompts ListBox (Clean custom scrollbars apply globally) -->
-                    <ListBox x:Name="PromptsListBox" Grid.Row="3" ItemsSource="{Binding Prompts}" SelectedItem="{Binding SelectedPrompt}"
+                    <ListBox x:Name="PromptsListBox" Grid.Row="4" ItemsSource="{Binding Prompts}" SelectedItem="{Binding SelectedPrompt}"
+                             SelectionMode="Extended" SelectionChanged="PromptsListBox_SelectionChanged"
                              ItemContainerStyle="{StaticResource PromptCardListBoxItemStyle}"
                              Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ScrollViewer.VerticalScrollBarVisibility="Auto">
@@ -628,7 +652,10 @@
 
                                         <Border Height="1" Background="{DynamicResource ThemeBorderBrush}" Margin="0,0,0,20"/>
                                         <TextBlock Text="{Binding Loc[UnusedTags], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,4"/>
-                                        <Button Content="{Binding Loc[CleanTags], Mode=OneWay}" Command="{Binding CleanUnusedTagsCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="{Binding Loc[CleanTags], Mode=OneWay}" Command="{Binding CleanUnusedTagsCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150" Margin="0,0,10,0"/>
+                                            <Button Content="{Binding Loc[ScanDuplicates], Mode=OneWay}" Command="{Binding ScanDuplicatesCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Width="150"/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Grid>
                             </TabItem>

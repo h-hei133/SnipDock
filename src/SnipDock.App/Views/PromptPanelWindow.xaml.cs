@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using SnipDock.Core.Models;
 using SnipDock.App.ViewModels;
 
 namespace SnipDock.App.Views
@@ -212,6 +213,14 @@ namespace SnipDock.App.Views
             if (selectedItem != null)
             {
                 PromptsListBox.ScrollIntoView(selectedItem);
+            }
+        }
+
+        private void PromptsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is PromptPanelViewModel vm)
+            {
+                vm.SetSelectedBatchItems(PromptsListBox.SelectedItems.Cast<PromptItem>());
             }
         }
     }
