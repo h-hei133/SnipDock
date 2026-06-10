@@ -855,7 +855,9 @@ namespace SnipDock.App.ViewModels
             var result = Views.ConfirmDialogWindow.Show(
                 owner!,
                 Loc["DeleteConfirmTitle"],
-                string.Format(Loc["DeleteConfirmMessage"], prompt.Name));
+                string.Format(Loc["DeleteConfirmMessage"], prompt.Name),
+                Loc["Confirm"],
+                Loc["Cancel"]);
             if (result)
             {
                 await _promptService.DeleteAsync(prompt.Id);
@@ -1408,7 +1410,7 @@ namespace SnipDock.App.ViewModels
                 Serilog.Log.Information("检测到剪贴板文本 (Clipboard text detected)");
 
                 // Create draft using domain utility factory
-                var draft = ClipboardEntryFactory.CreateDraft(text, SelectedTypeFilter);
+                var draft = ClipboardEntryFactory.CreateDraft(text, SelectedTypeFilter, Loc["ClipboardDefaultTitle"]);
 
                 // Load to editor UI
                 EditorTitle = Loc["ClipboardItemTitle"];
@@ -1504,7 +1506,9 @@ namespace SnipDock.App.ViewModels
                     bool confirm = Views.ConfirmDialogWindow.Show(
                         owner!,
                         Loc["RestoreConfirmTitle"],
-                        Loc["RestoreConfirmMessage"]);
+                        Loc["RestoreConfirmMessage"],
+                        Loc["Confirm"],
+                        Loc["Cancel"]);
 
                     if (!confirm)
                     {
@@ -1635,13 +1639,17 @@ namespace SnipDock.App.ViewModels
 
             if (oldTag.Equals(newTag, StringComparison.OrdinalIgnoreCase)) return;
 
-            var confirm = System.Windows.MessageBox.Show(
-                string.Format(Loc["TagRenameConfirmMessage"], oldTag, newTag),
-                Loc["TagRenameConfirmTitle"],
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+            Window? owner = Application.Current.Windows.OfType<Views.PromptPanelWindow>().FirstOrDefault();
+            if (owner == null) return;
 
-            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+            var confirm = Views.ConfirmDialogWindow.Show(
+                owner,
+                Loc["TagRenameConfirmTitle"],
+                string.Format(Loc["TagRenameConfirmMessage"], oldTag, newTag),
+                Loc["Confirm"],
+                Loc["Cancel"]);
+
+            if (!confirm) return;
 
             try
             {
@@ -1674,13 +1682,17 @@ namespace SnipDock.App.ViewModels
 
             if (sourceTag.Equals(targetTag, StringComparison.OrdinalIgnoreCase)) return;
 
-            var confirm = System.Windows.MessageBox.Show(
-                string.Format(Loc["TagMergeConfirmMessage"], sourceTag, targetTag),
-                Loc["TagMergeConfirmTitle"],
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+            Window? owner = Application.Current.Windows.OfType<Views.PromptPanelWindow>().FirstOrDefault();
+            if (owner == null) return;
 
-            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+            var confirm = Views.ConfirmDialogWindow.Show(
+                owner,
+                Loc["TagMergeConfirmTitle"],
+                string.Format(Loc["TagMergeConfirmMessage"], sourceTag, targetTag),
+                Loc["Confirm"],
+                Loc["Cancel"]);
+
+            if (!confirm) return;
 
             try
             {

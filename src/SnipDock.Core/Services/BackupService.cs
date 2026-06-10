@@ -149,8 +149,16 @@ namespace SnipDock.Core.Services
             Directory.CreateDirectory(_backupDir);
 
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            var backupFilename = $"prompts_{timestamp}.json";
+            var backupBaseName = $"prompts_{timestamp}";
+            var backupFilename = $"{backupBaseName}.json";
             var destPath = Path.Combine(_backupDir, backupFilename);
+            var suffix = 1;
+            while (File.Exists(destPath))
+            {
+                backupFilename = $"{backupBaseName}_{suffix}.json";
+                destPath = Path.Combine(_backupDir, backupFilename);
+                suffix++;
+            }
 
             using (var sourceStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var destinationStream = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None))

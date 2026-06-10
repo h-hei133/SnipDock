@@ -7,6 +7,11 @@ namespace SnipDock.Core.Utils
     {
         public static ClipboardDraft CreateDraft(string clipboardText, string currentTypeFilter)
         {
+            return CreateDraft(clipboardText, currentTypeFilter, "Clipboard item");
+        }
+
+        public static ClipboardDraft CreateDraft(string clipboardText, string currentTypeFilter, string fallbackTitle)
+        {
             if (string.IsNullOrWhiteSpace(clipboardText))
             {
                 throw new ArgumentException("Clipboard text cannot be null or empty.", nameof(clipboardText));
@@ -23,7 +28,7 @@ namespace SnipDock.Core.Utils
             }
             else
             {
-                title = "来自剪贴板的条目";
+                title = string.IsNullOrWhiteSpace(fallbackTitle) ? "Clipboard item" : fallbackTitle;
             }
 
             // 2. Select default ItemType based on current filter key

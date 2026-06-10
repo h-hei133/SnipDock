@@ -12,26 +12,32 @@ namespace SnipDock.Infrastructure.Services
         private const string AppName = "SnipDock";
         private readonly IRegistryService _registryService;
         private readonly ILogger<StartupLaunchService> _logger;
+        private readonly Func<string?> _getExecutablePath;
 
         public StartupLaunchService(IRegistryService registryService, ILogger<StartupLaunchService> logger)
+            : this(registryService, logger, () => Environment.ProcessPath)
+        {
+        }
+
+        public StartupLaunchService(IRegistryService registryService, ILogger<StartupLaunchService> logger, Func<string?> getExecutablePath)
         {
             _registryService = registryService ?? throw new ArgumentNullException(nameof(registryService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _getExecutablePath = getExecutablePath ?? throw new ArgumentNullException(nameof(getExecutablePath));
         }
 
         public bool IsDevelopmentMode()
         {
             var path = GetCurrentExecutablePath();
             if (string.IsNullOrEmpty(path)) return true;
-            return path.Contains(@"\bin\Debug\", StringComparison.OrdinalIgnoreCase) || 
-                   path.Contains(@"\bin\Release\", StringComparison.OrdinalIgnoreCase) || 
+            return path.Contains(@"\bin\Debug\", StringComparison.OrdinalIgnoreCase) ||
                    path.Contains(@"\obj\", StringComparison.OrdinalIgnoreCase) ||
-                   path.Contains(@"\dotnet", StringComparison.OrdinalIgnoreCase);
+                   string.Equals(Path.GetFileName(path), "dotnet.exe", StringComparison.OrdinalIgnoreCase);
         }
 
         public string GetCurrentExecutablePath()
         {
-            return System.Environment.ProcessPath ?? string.Empty;
+            return _getExecutablePath() ?? string.Empty;
         }
 
         public Task<bool> IsEnabledAsync()

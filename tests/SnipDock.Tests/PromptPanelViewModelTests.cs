@@ -93,6 +93,52 @@ namespace SnipDock.Tests
         }
 
         [Fact]
+        public void FloatingViewModel_LocalizedMenuText_UpdatesWithLanguage()
+        {
+            var vm = new FloatingViewModel();
+
+            vm.SetLanguage("zh-CN");
+            Assert.Equal("显示 / 隐藏面板", vm.Loc["TogglePanel"]);
+            Assert.Equal("退出程序", vm.Loc["ExitApp"]);
+
+            vm.SetLanguage("en-US");
+            Assert.Equal("Show / hide panel", vm.Loc["TogglePanel"]);
+            Assert.Equal("Exit SnipDock", vm.Loc["ExitApp"]);
+        }
+
+        [Fact]
+        public void LocalizationService_AppLevelMessages_AreAvailableInBothLanguages()
+        {
+            var service = new LocalizationService();
+            var zh = service.CreateStrings("zh-CN");
+            var en = service.CreateStrings("en-US");
+
+            var keys = new[]
+            {
+                "LegacyInstanceTitle",
+                "LegacyInstanceMessage",
+                "DuplicateInstanceTitle",
+                "DuplicateInstanceMessage",
+                "LoggingInitFailedTitle",
+                "LoggingInitFailedMessage",
+                "BackupRecoveredTitle",
+                "BackupRecoveredMessage",
+                "StorageChangedTitle",
+                "StorageChangedMessage",
+                "UnexpectedErrorTitle",
+                "UnexpectedErrorMessage",
+                "FatalErrorTitle",
+                "FatalErrorMessage"
+            };
+
+            foreach (var key in keys)
+            {
+                Assert.NotEqual(key, zh[key]);
+                Assert.NotEqual(key, en[key]);
+            }
+        }
+
+        [Fact]
         public void SelectingPrompt_TransitionsToDetailVisible()
         {
             var (vm, _, _, _) = CreateViewModel();

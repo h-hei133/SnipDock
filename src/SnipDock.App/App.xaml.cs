@@ -98,10 +98,11 @@ namespace SnipDock.App
                 {
                     Log.Warning("检测到旧版 PromptShelf 实例仍在运行！");
                     legacyMutex.Dispose(); // Close the handle we just opened
+                    var loc = CurrentLoc();
                     
                     var result = MessageBox.Show(
-                        "检测到 PromptShelf 旧版正在运行。\n\nSnipDock 与旧版共享同一数据配置，同时运行可能导致数据冲突。\n\n建议您先退出旧版 PromptShelf 再启动 SnipDock。\n\n是否仍要强制启动 SnipDock？",
-                        "检测到旧实例在运行",
+                        loc["LegacyInstanceMessage"],
+                        loc["LegacyInstanceTitle"],
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Warning,
                         MessageBoxResult.No); // Default to No (safe exit)
@@ -143,7 +144,8 @@ namespace SnipDock.App
                     Log.Error(ex, "尝试通过 Win32 API 激活运行中实例窗体失败。");
                 }
 
-                MessageBox.Show("SnipDock 已经在后台运行中！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                var loc = CurrentLoc();
+                MessageBox.Show(loc["DuplicateInstanceMessage"], loc["DuplicateInstanceTitle"], MessageBoxButton.OK, MessageBoxImage.Information);
                 RequestShutdown("Duplicate process exit");
                 return;
             }
@@ -189,7 +191,8 @@ namespace SnipDock.App
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"初始化正式数据区日志失败：{ex.Message}", "严重错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                var loc = CurrentLoc();
+                MessageBox.Show(string.Format(loc["LoggingInitFailedMessage"], ex.Message), loc["LoggingInitFailedTitle"], MessageBoxButton.OK, MessageBoxImage.Error);
                 RequestShutdown("Logging configuration failure");
                 return;
             }
@@ -219,9 +222,10 @@ namespace SnipDock.App
                 if (promptStore.WasRecoveredFromBackup)
                 {
                     Log.Warning("系统检测到主数据文件存在损坏或丢失，已自动从备份文件完成恢复。向用户发出 UI 警示。");
+                    var loc = CurrentLoc();
                     MessageBox.Show(
-                        "数据安全提示：检测到您的主数据文件 (prompts.json) 丢失或损坏，系统已自动从最近的备份文件 (prompts.json.bak) 恢复了您的片段数据！\n\n建议您在软件运行稳定后进行二次备份。",
-                        "数据文件自动恢复提示", 
+                        loc["BackupRecoveredMessage"],
+                        loc["BackupRecoveredTitle"], 
                         MessageBoxButton.OK, 
                         MessageBoxImage.Information
                     );
@@ -312,7 +316,7 @@ namespace SnipDock.App
             floatingVm.ResetStoragePathRequested += (s, ev) =>
             {
                 Log.Information("用户触发了重设数据存储目录的操作。");
-                var configVm = new ConfigurationViewModel(bootstrapStore, ConfigurationMode.ChangeStorageLocation);
+                var configVm = new ConfigurationViewModel(bootstrapStore, ConfigurationMode.ChangeStorageLocation, appSettingsStore.Load().Language);
                 var configWin = new ConfigurationWindow(configVm);
                 
                 var result = configWin.ShowDialog();
@@ -321,7 +325,8 @@ namespace SnipDock.App
                     string newPath = bootstrapStore.Load().StoragePath;
                     Log.Information("Storage path changed. New Path: {Path}", newPath);
                     Log.Information("Storage settings window closed");
-                    MessageBox.Show("数据存储目录已成功修改！为了正式加载新的数据源，软件将自动重新启动。", "设置成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    var loc = CurrentLoc();
+                    MessageBox.Show(loc["StorageChangedMessage"], loc["StorageChangedTitle"], MessageBoxButton.OK, MessageBoxImage.Information);
                     
                     // Trigger dynamic executable restart
                     System.Diagnostics.Process.Start(Environment.ProcessPath!);
@@ -338,7 +343,7 @@ namespace SnipDock.App
             panelVm.ChangeStoragePathRequested += (s, ev) =>
             {
                 Log.Information("用户在管理面板设置区触发了重设数据存储目录的操作。");
-                var configVm = new ConfigurationViewModel(bootstrapStore, ConfigurationMode.ChangeStorageLocation);
+                var configVm = new ConfigurationViewModel(bootstrapStore, ConfigurationMode.ChangeStorageLocation, appSettingsStore.Load().Language);
                 var configWin = new ConfigurationWindow(configVm);
                 
                 var result = configWin.ShowDialog();
@@ -347,7 +352,8 @@ namespace SnipDock.App
                     string newPath = bootstrapStore.Load().StoragePath;
                     Log.Information("Storage path changed. New Path: {Path}", newPath);
                     Log.Information("Storage settings window closed");
-                    MessageBox.Show("数据存储目录已成功修改！为了正式加载新的数据源，软件将自动重新启动。", "设置成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    var loc = CurrentLoc();
+                    MessageBox.Show(loc["StorageChangedMessage"], loc["StorageChangedTitle"], MessageBoxButton.OK, MessageBoxImage.Information);
                     
                     // Trigger dynamic executable restart
                     System.Diagnostics.Process.Start(Environment.ProcessPath!);
@@ -396,13 +402,13 @@ namespace SnipDock.App
 
                 var contextMenu = new System.Windows.Forms.ContextMenuStrip();
 
-                var toggleItem = new System.Windows.Forms.ToolStripMenuItem("显示 / 隐藏面板", null, (s, ev) =>
+                var toggleItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["TogglePanel"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: TogglePanel");
                     Dispatcher.BeginInvoke(() => TogglePromptPanel("TrayMenu"));
                 });
 
-                var newItem = new System.Windows.Forms.ToolStripMenuItem("新建条目", null, (s, ev) =>
+                var newItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["NewItemTitle"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: NewItem");
                     Dispatcher.BeginInvoke(() =>
@@ -418,7 +424,7 @@ namespace SnipDock.App
                     });
                 });
 
-                var clipboardItem = new System.Windows.Forms.ToolStripMenuItem("从剪贴板新建", null, (s, ev) =>
+                var clipboardItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["AddFromClipboard"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: NewFromClipboard");
                     Dispatcher.BeginInvoke(() =>
@@ -434,25 +440,25 @@ namespace SnipDock.App
                     });
                 });
 
-                var dataDirItem = new System.Windows.Forms.ToolStripMenuItem("打开数据目录", null, (s, ev) =>
+                var dataDirItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["OpenDataDir"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: OpenDataDir");
                     Dispatcher.BeginInvoke(() => panelVm.OpenStorageDirCommand.Execute(null));
                 });
 
-                var logsDirItem = new System.Windows.Forms.ToolStripMenuItem("打开日志目录", null, (s, ev) =>
+                var logsDirItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["OpenLogsDir"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: OpenLogsDir");
                     Dispatcher.BeginInvoke(() => panelVm.OpenLogsDirCommand.Execute(null));
                 });
 
-                var backupsDirItem = new System.Windows.Forms.ToolStripMenuItem("打开备份目录", null, (s, ev) =>
+                var backupsDirItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["OpenBackupsDir"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: OpenBackupsDir");
                     Dispatcher.BeginInvoke(() => panelVm.OpenBackupsDirCommand.Execute(null));
                 });
 
-                var resetPosItem = new System.Windows.Forms.ToolStripMenuItem("重置悬浮球位置", null, (s, ev) =>
+                var resetPosItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["ResetFloatingPosition"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: ResetFloatingPos");
                     Dispatcher.BeginInvoke(() =>
@@ -461,7 +467,7 @@ namespace SnipDock.App
                     });
                 });
 
-                var settingsItem = new System.Windows.Forms.ToolStripMenuItem("设置", null, (s, ev) =>
+                var settingsItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["SettingsTitle"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: Settings");
                     Dispatcher.BeginInvoke(() =>
@@ -478,11 +484,35 @@ namespace SnipDock.App
                     });
                 });
 
-                var exitItem = new System.Windows.Forms.ToolStripMenuItem("退出", null, (s, ev) =>
+                var exitItem = new System.Windows.Forms.ToolStripMenuItem(panelVm.Loc["ExitApp"], null, (s, ev) =>
                 {
                     Log.Information("Tray menu action triggered: Exit");
                     Dispatcher.BeginInvoke(() => RequestShutdown("TrayExit"));
                 });
+
+                void ApplyTrayLocalization()
+                {
+                    toggleItem.Text = panelVm.Loc["TogglePanel"];
+                    newItem.Text = panelVm.Loc["NewItemTitle"];
+                    clipboardItem.Text = panelVm.Loc["AddFromClipboard"];
+                    dataDirItem.Text = panelVm.Loc["OpenDataDir"];
+                    logsDirItem.Text = panelVm.Loc["OpenLogsDir"];
+                    backupsDirItem.Text = panelVm.Loc["OpenBackupsDir"];
+                    resetPosItem.Text = panelVm.Loc["ResetFloatingPosition"];
+                    settingsItem.Text = panelVm.Loc["SettingsTitle"];
+                    exitItem.Text = panelVm.Loc["ExitApp"];
+                    floatingVm.SetLanguage(panelVm.SelectedLanguage);
+                }
+
+                ApplyTrayLocalization();
+                panelVm.PropertyChanged += (_, args) =>
+                {
+                    if (args.PropertyName == nameof(PromptPanelViewModel.Loc) ||
+                        args.PropertyName == nameof(PromptPanelViewModel.SelectedLanguage))
+                    {
+                        Dispatcher.BeginInvoke(ApplyTrayLocalization);
+                    }
+                };
 
                 contextMenu.Items.Add(toggleItem);
                 contextMenu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
@@ -583,21 +613,7 @@ namespace SnipDock.App
             if (_isShuttingDown) return;
             _isShuttingDown = true;
 
-            // Dispose Tray Icon
-            try
-            {
-                if (_notifyIcon != null)
-                {
-                    _notifyIcon.Visible = false;
-                    _notifyIcon.Dispose();
-                    _notifyIcon = null;
-                    Log.Information("Tray icon disposed");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error disposing tray icon.");
-            }
+            DisposeTrayIcon();
 
             Log.Information("Shutdown requested: {Reason}", reason);
 
@@ -620,22 +636,7 @@ namespace SnipDock.App
                 Log.Error(ex, "Failed to save settings during RequestShutdown.");
             }
 
-            // Unregister Global Hotkey
-            try
-            {
-                if (_serviceProvider != null)
-                {
-                    var hotkeyService = _serviceProvider.GetService<GlobalHotkeyService>();
-                    if (hotkeyService != null)
-                    {
-                        hotkeyService.Unregister();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error unregistering hotkey during shutdown.");
-            }
+            UnregisterGlobalHotkey();
 
             // 2. Close windows
             Log.Information("Closing windows");
@@ -677,6 +678,40 @@ namespace SnipDock.App
             catch
             {
                 Environment.Exit(0);
+            }
+        }
+
+        private void DisposeTrayIcon()
+        {
+            try
+            {
+                if (_notifyIcon != null)
+                {
+                    _notifyIcon.Visible = false;
+                    _notifyIcon.Dispose();
+                    _notifyIcon = null;
+                    Log.Information("Tray icon disposed");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error disposing tray icon.");
+            }
+        }
+
+        private void UnregisterGlobalHotkey()
+        {
+            try
+            {
+                if (_serviceProvider != null)
+                {
+                    var hotkeyService = _serviceProvider.GetService<GlobalHotkeyService>();
+                    hotkeyService?.Unregister();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error unregistering hotkey during shutdown.");
             }
         }
 
@@ -736,14 +771,16 @@ namespace SnipDock.App
         {
             e.Handled = true;
             Log.Fatal(e.Exception, "从 UI 线程捕获到全局未处理异常。");
-            MessageBox.Show($"程序发生异常错误，已记录到日志中：\n{e.Exception.Message}", "意外错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            var loc = CurrentLoc();
+            MessageBox.Show(string.Format(loc["UnexpectedErrorMessage"], e.Exception.Message), loc["UnexpectedErrorTitle"], MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
             Log.Fatal(exception, "AppDomain 捕获到全局致命崩溃异常。IsTerminating={IsTerminating}", e.IsTerminating);
-            MessageBox.Show($"程序发生严重错误并即将关闭，已记录到日志中：\n{exception?.Message}", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            var loc = CurrentLoc();
+            MessageBox.Show(string.Format(loc["FatalErrorMessage"], exception?.Message), loc["FatalErrorTitle"], MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
@@ -752,8 +789,25 @@ namespace SnipDock.App
             e.SetObserved();
         }
 
+        private LocalizedStrings CurrentLoc()
+        {
+            string? language = null;
+            try
+            {
+                language = _serviceProvider?.GetService<IAppSettingsStore>()?.Load().Language;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Failed to load language for localized app message. Falling back to system language.");
+            }
+
+            return new LocalizationService().CreateStrings(LocalizationService.NormalizeLanguage(language));
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
+            DisposeTrayIcon();
+            UnregisterGlobalHotkey();
             Log.Information("====== SnipDock 进程关闭。Goodbye! ======");
             Log.CloseAndFlush();
             base.OnExit(e);

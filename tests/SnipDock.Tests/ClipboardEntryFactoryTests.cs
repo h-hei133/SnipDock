@@ -10,7 +10,7 @@ namespace SnipDock.Tests
         [InlineData("Short first line", "Short first line")]
         [InlineData("This is exactly 30 characters!", "This is exactly 30 characters!")]
         [InlineData("Short first line\r\nSecond line is longer", "Short first line")]
-        [InlineData("This first line is extremely long and exceeds the thirty characters limit.", "来自剪贴板的条目")]
+        [InlineData("This first line is extremely long and exceeds the thirty characters limit.", "Clipboard item")]
         public void CreateDraft_GeneratesCorrectTitle(string clipboardText, string expectedTitle)
         {
             // Act
@@ -19,6 +19,17 @@ namespace SnipDock.Tests
             // Assert
             Assert.Equal(expectedTitle, draft.Name);
             Assert.Equal(clipboardText, draft.Content);
+        }
+
+        [Fact]
+        public void CreateDraft_UsesProvidedFallbackTitleForLongFirstLine()
+        {
+            var draft = ClipboardEntryFactory.CreateDraft(
+                "This first line is extremely long and exceeds the thirty characters limit.",
+                "All",
+                "来自剪贴板的条目");
+
+            Assert.Equal("来自剪贴板的条目", draft.Name);
         }
 
         [Theory]

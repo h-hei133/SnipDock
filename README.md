@@ -103,13 +103,31 @@ On first launch, SnipDock asks the user to choose a local data directory. User i
 - Command items are copy-only
 - Beta release, more real-world stability testing is still needed
 
+## FAQ
+
+**Do I need to install .NET 9?**
+
+The current package is framework-dependent, so Windows needs the .NET 9 Desktop Runtime unless it is already installed.
+
+**Where is my data stored?**
+
+SnipDock stores items in the local folder you choose on first launch. The main data file is `prompts.json`, with backups in `backups\`.
+
+**How do I disable startup launch?**
+
+Open SnipDock settings and turn off startup launch. The app uses the current user's `HKCU` startup entry, so administrator permission is not required.
+
+**How do I back up or restore data?**
+
+Use JSON export for manual archives, or restore from the automatic backup folder in settings. SnipDock creates a safety backup before restoring.
+
 ## Roadmap
 
-- Add official screenshots and demo notes
-- Complete GitHub Release attachments and checksums
-- Prepare a more user-friendly installer
-- Continue validating backup restore, import/export, startup launch, and storage path switching
-- Continue polishing documentation and UI copy
+- v0.1.1: beta stability fixes, startup launch validation, and FAQ polish
+- v0.2.0: installer and release experience
+- v0.3.0: template variables
+- v0.4.0: Markdown preview
+- v0.5.0: batch management and duplicate detection
 
 ## License
 

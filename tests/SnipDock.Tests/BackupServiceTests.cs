@@ -60,6 +60,45 @@ namespace SnipDock.Tests
         }
 
         [Fact]
+        public async Task Backup_CreatesUniqueFilesWhenMultipleBackupsHappenInSameSecond()
+        {
+            var promptsFile = Path.Combine(_tempPath, "prompts.json");
+            await File.WriteAllTextAsync(promptsFile, "[\"current data\"]");
+
+            var service = new BackupService(_tempPath);
+
+            await service.CreateBackupAsync("First");
+            await service.CreateBackupAsync("Second");
+
+            var backupDir = Path.Combine(_tempPath, "backups");
+            var files = Directory.GetFiles(backupDir, "prompts_*.json");
+
+            Assert.Equal(2, files.Length);
+            Assert.Equal(2, files.Select(Path.GetFileName).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        }
+
+        [Fact]
+        public async Task RestoreBackup_CreatesSafetyBackupBeforeOverwritingCurrentData()
+        {
+            var promptsFile = Path.Combine(_tempPath, "prompts.json");
+            await File.WriteAllTextAsync(promptsFile, "[\"current data before restore\"]");
+
+            var restoreSource = Path.Combine(_tempPath, "restore-source.json");
+            await File.WriteAllTextAsync(restoreSource, "[\"restored data\"]");
+
+            var service = new BackupService(_tempPath);
+
+            await service.RestoreBackupAsync(restoreSource);
+
+            Assert.Equal("[\"restored data\"]", await File.ReadAllTextAsync(promptsFile));
+
+            var backupDir = Path.Combine(_tempPath, "backups");
+            var safetyBackup = Directory.GetFiles(backupDir, "prompts_*.json")
+                .Single();
+            Assert.Equal("[\"current data before restore\"]", await File.ReadAllTextAsync(safetyBackup));
+        }
+
+        [Fact]
         public async Task Backup_RetainsOnlyRecent20Files()
         {
             // Arrange

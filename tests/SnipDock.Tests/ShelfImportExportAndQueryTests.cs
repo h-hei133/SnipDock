@@ -64,6 +64,33 @@ namespace SnipDock.Tests
         }
 
         [Fact]
+        public async Task QueryAsync_SearchesTitleAndTagsButNotContent()
+        {
+            var store = new MockPromptStore();
+            store.Items.AddRange(new[]
+            {
+                new PromptItem { Name = "Deploy checklist", Tags = new List<string> { "Release" }, Content = "hidden-token-only" },
+                new PromptItem { Name = "Meeting notes", Tags = new List<string> { "hidden-token-tag" }, Content = "ordinary body" },
+                new PromptItem { Name = "hidden-token-title", Tags = new List<string> { "Notes" }, Content = "ordinary body" }
+            });
+
+            var service = new PromptService(store);
+            await service.InitializeAsync();
+
+            var results = await service.QueryAsync(new PromptQueryOptions
+            {
+                SearchText = "hidden-token",
+                SelectedTypeFilter = "All",
+                SelectedTagFilter = null
+            });
+
+            Assert.Equal(2, results.Count);
+            Assert.DoesNotContain(results, item => item.Name == "Deploy checklist");
+            Assert.Contains(results, item => item.Name == "Meeting notes");
+            Assert.Contains(results, item => item.Name == "hidden-token-title");
+        }
+
+        [Fact]
         public async Task MarkAsUsedAndToggleFavorite_DoNotChangeUpdatedAt()
         {
             var store = new MockPromptStore();
@@ -179,6 +206,39 @@ namespace SnipDock.Tests
                     File.Delete(tempFile);
                 }
             }
+        }
+
+        [Fact]
+        public async Task ImportAsync_CreatesBackupBeforeChangingItems()
+        {
+            var store = new MockPromptStore();
+            var service = new PromptService(store);
+            await service.InitializeAsync();
+
+            var tempStoragePath = Path.Combine(Path.GetTempPath(), "SnipDock_ImportBackupTests_" + Guid.NewGuid());
+            Directory.CreateDirectory(tempStoragePath);
+            _tempDirectories.Add(tempStoragePath);
+
+            var currentDataFile = Path.Combine(tempStoragePath, "prompts.json");
+            await File.WriteAllTextAsync(currentDataFile, "[\"current data before import\"]");
+
+            var backupService = new BackupService(tempStoragePath);
+            var exchangeService = new ShelfImportExportService(service, backupService);
+
+            var importFile = Path.Combine(tempStoragePath, "import.json");
+            var importItems = new List<PromptItem>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Imported Item", ItemType = "Prompt", Content = "Imported content" }
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(importItems);
+            await File.WriteAllTextAsync(importFile, json);
+
+            var result = await exchangeService.ImportAsync(importFile);
+
+            Assert.Equal(1, result.ImportedCount);
+            var backupDir = Path.Combine(tempStoragePath, "backups");
+            var backupFile = Directory.GetFiles(backupDir, "prompts_*.json").Single();
+            Assert.Equal("[\"current data before import\"]", await File.ReadAllTextAsync(backupFile));
         }
 
         public void Dispose()

@@ -84,20 +84,39 @@ namespace SnipDock.Tests
         {
             var fakeRegistry = new FakeRegistryService();
             var logger = NullLogger<StartupLaunchService>.Instance;
-            var service = new StartupLaunchService(fakeRegistry, logger);
+            var service = new StartupLaunchService(
+                fakeRegistry,
+                logger,
+                () => @"C:\Work\SnipDock\src\SnipDock.App\bin\Debug\net9.0-windows\SnipDock.App.exe");
 
-            // Under test environment, the process path normally contains bin\Debug or similar,
-            // so IsDevelopmentMode should return true.
-            var isDev = service.IsDevelopmentMode();
-            
-            var path = service.GetCurrentExecutablePath();
-            bool expectedDev = string.IsNullOrEmpty(path) || 
-                              path.Contains(@"\bin\Debug\", StringComparison.OrdinalIgnoreCase) ||
-                              path.Contains(@"\bin\Release\", StringComparison.OrdinalIgnoreCase) ||
-                              path.Contains(@"\obj\", StringComparison.OrdinalIgnoreCase) ||
-                              path.Contains(@"\dotnet", StringComparison.OrdinalIgnoreCase);
+            Assert.True(service.IsDevelopmentMode());
+        }
 
-            Assert.Equal(expectedDev, isDev);
+        [Theory]
+        [InlineData(@"C:\Work\SnipDock\src\SnipDock.App\bin\Release\net9.0-windows\SnipDock.App.exe")]
+        [InlineData(@"C:\Apps\SnipDock\SnipDock.App.exe")]
+        [InlineData(@"D:\SnipDock\publish\SnipDock\SnipDock.App.exe")]
+        [InlineData(@"D:\dotnet-tools\SnipDock\SnipDock.App.exe")]
+        public void StartupLaunchService_AllowsReleaseOrPublishedExecutablePaths(string executablePath)
+        {
+            var fakeRegistry = new FakeRegistryService();
+            var logger = NullLogger<StartupLaunchService>.Instance;
+            var service = new StartupLaunchService(fakeRegistry, logger, () => executablePath);
+
+            Assert.False(service.IsDevelopmentMode());
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(@"C:\Work\SnipDock\src\SnipDock.App\obj\Debug\net9.0-windows\SnipDock.App.exe")]
+        [InlineData(@"C:\Program Files\dotnet\dotnet.exe")]
+        public void StartupLaunchService_BlocksDebugObjAndDotnetRunPaths(string executablePath)
+        {
+            var fakeRegistry = new FakeRegistryService();
+            var logger = NullLogger<StartupLaunchService>.Instance;
+            var service = new StartupLaunchService(fakeRegistry, logger, () => executablePath);
+
+            Assert.True(service.IsDevelopmentMode());
         }
 
         [Fact]

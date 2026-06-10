@@ -65,12 +65,12 @@
             PreviewMouseLeftButtonUp="Border_PreviewMouseLeftButtonUp">
         
         <Border.ContextMenu>
-            <ContextMenu>
-                <MenuItem Header="显示 / 隐藏面板" Command="{Binding TogglePanelCommand}" />
-                <MenuItem Header="重置悬浮球位置" Command="{Binding ResetPositionCommand}" />
-                <MenuItem Header="设置数据目录" Command="{Binding ResetStoragePathCommand}" />
+            <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                <MenuItem Header="{Binding Loc[TogglePanel], Mode=OneWay}" Command="{Binding TogglePanelCommand}" />
+                <MenuItem Header="{Binding Loc[ResetFloatingPosition], Mode=OneWay}" Command="{Binding ResetPositionCommand}" />
+                <MenuItem Header="{Binding Loc[SetDataDirectory], Mode=OneWay}" Command="{Binding ResetStoragePathCommand}" />
                 <Separator Background="{DynamicResource ThemeBorderBrush}" Margin="2,4" />
-                <MenuItem Header="退出程序" Command="{Binding ExitCommand}" />
+                <MenuItem Header="{Binding Loc[ExitApp], Mode=OneWay}" Command="{Binding ExitCommand}" />
             </ContextMenu>
         </Border.ContextMenu>
         

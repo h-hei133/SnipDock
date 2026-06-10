@@ -50,8 +50,10 @@ settings.json
 bootstrap.json
 backups/
 *.local.json
+GOAL.md
 
 # Local publish archives / installers
+dist/
 *.zip
 *.msix
 *.msi

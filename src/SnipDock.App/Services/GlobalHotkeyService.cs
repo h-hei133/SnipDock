@@ -69,6 +69,7 @@ namespace SnipDock.App.Services
                 if (_hwndSource != null)
                 {
                     _hwndSource.RemoveHook(HwndHook);
+                    _hwndSource = null;
                 }
 
                 bool success = UnregisterHotKey(_hWnd, HotkeyId);
@@ -85,6 +86,7 @@ namespace SnipDock.App.Services
             finally
             {
                 _isRegistered = false;
+                _hWnd = IntPtr.Zero;
             }
         }
 
