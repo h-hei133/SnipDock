@@ -11,8 +11,8 @@ body:
     id: version
     attributes:
       label: SnipDock version / 版本
-      description: 例如 v0.1.0-beta
-      placeholder: v0.1.0-beta
+      description: 例如 v0.2.0
+      placeholder: v0.2.0
     validations:
       required: true
   - type: textarea

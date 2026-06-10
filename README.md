@@ -2,7 +2,7 @@
 
 SnipDock is a lightweight local Windows snippet manager for quickly saving, searching, and copying prompts, commands, code snippets, notes, and frequently used information.
 
-Current release: **v0.1.0-beta**. This is an early beta release for public testing and feedback.
+Current release: **v0.2.0**. This release adds the first installer packaging workflow while keeping SnipDock local-first and lightweight.
 
 Chinese README: [README.zh-CN.md](./README.zh-CN.md)
 
@@ -39,13 +39,18 @@ Command items are copy-only. SnipDock never automatically executes saved command
 
 ## Download and Run
 
-If you download a published exe package, run:
+SnipDock provides two release formats:
+
+- Installer: run `SnipDock-Setup-v0.2.0.exe` and follow the setup wizard.
+- Zip / portable package: extract the package and run:
 
 ```text
 SnipDock.App.exe
 ```
 
-The current package is framework-dependent. If the app does not start, install the .NET 9 Desktop Runtime first.
+Current packages are framework-dependent. If the app does not start, install the .NET 9 Desktop Runtime first.
+
+The installer installs SnipDock for the current user, creates a Start Menu shortcut, and can optionally create a desktop shortcut. Uninstalling SnipDock removes the installed app files, but does not delete the local data folder selected by the user.
 
 ## Run From Source
 
@@ -73,6 +78,16 @@ dotnet publish src/SnipDock.App/SnipDock.App.csproj -c Release -r win-x64 --self
 
 The `publish/` folder is ignored by Git and should not be committed.
 
+## Build Installer
+
+SnipDock uses Inno Setup for the Windows installer. Install Inno Setup, create the Release publish output, then compile:
+
+```powershell
+ISCC.exe .\installer\SnipDock.iss
+```
+
+The installer output is written to `dist\installer\`, which is ignored by Git.
+
 ## Data Storage
 
 On first launch, SnipDock asks the user to choose a local data directory. User items, settings, backups, and runtime logs are stored locally.
@@ -98,7 +113,8 @@ On first launch, SnipDock asks the user to choose a local data directory. User i
 
 - Windows only
 - No cloud sync
-- No installer or auto-update yet
+- Installer is available, but it does not bundle the .NET Desktop Runtime
+- No automatic update yet; the About page opens GitHub Releases for manual update checks
 - Search covers titles and tags only, not item content
 - Command items are copy-only
 - Beta release, more real-world stability testing is still needed
@@ -123,7 +139,6 @@ Use JSON export for manual archives, or restore from the automatic backup folder
 
 ## Roadmap
 
-- v0.1.1: beta stability fixes, startup launch validation, and FAQ polish
 - v0.2.0: installer and release experience
 - v0.3.0: template variables
 - v0.4.0: Markdown preview

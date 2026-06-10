@@ -24,6 +24,7 @@ namespace SnipDock.App.ViewModels
         private readonly IAppSettingsStore _appSettingsStore;
         private readonly LocalizationService _localizationService = new();
         private const string AllTagsFilterKey = "__ALL_TAGS__";
+        private const string ReleasesUrl = "https://github.com/h-hei133/SnipDock/releases";
 
         private readonly ShelfImportExportService _importExportService;
         private readonly BackupService _backupService;
@@ -100,6 +101,7 @@ namespace SnipDock.App.ViewModels
             ChangeAccentColorCommand = new RelayCommand<string>(OnChangeAccentColor);
             ChangeLanguageCommand = new RelayCommand<string>(OnChangeLanguage);
             ChangeStoragePathCommand = new RelayCommand(OnChangeStoragePath);
+            OpenReleasesCommand = new RelayCommand(OnOpenReleases);
 
             // Phase 3 Commands
             ToggleFavoriteCommand = new RelayCommand(async () => await OnToggleFavoriteAsync(), () => SelectedPrompt != null);
@@ -519,6 +521,7 @@ namespace SnipDock.App.ViewModels
         public ICommand ChangeAccentColorCommand { get; }
         public ICommand ChangeLanguageCommand { get; }
         public ICommand ChangeStoragePathCommand { get; }
+        public ICommand OpenReleasesCommand { get; }
 
         // Phase 3 Commands
         public ICommand ToggleFavoriteCommand { get; }
@@ -600,10 +603,12 @@ namespace SnipDock.App.ViewModels
                 var informationalVersion = attribute?.InformationalVersion;
 
                 return string.IsNullOrWhiteSpace(informationalVersion)
-                    ? "v0.1.0-beta"
+                    ? "v0.2.0"
                     : $"v{informationalVersion}";
             }
         }
+
+        public string ReleasesPageUrl => ReleasesUrl;
 
         public int TotalItemsCount => _promptService.GetAllAsync().GetAwaiter().GetResult().Count;
 
@@ -1385,6 +1390,24 @@ namespace SnipDock.App.ViewModels
         private void OnChangeStoragePath()
         {
             ChangeStoragePathRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnOpenReleases()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = ReleasesUrl,
+                    UseShellExecute = true
+                });
+                Serilog.Log.Information("GitHub Releases page opened");
+            }
+            catch (Exception ex)
+            {
+                ShowErrorToast(Loc["OpenReleasesFailed"]);
+                Serilog.Log.Error(ex, "Failed to open GitHub Releases page");
+            }
         }
 
         // Phase 4 Command Handlers

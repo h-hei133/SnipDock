@@ -634,6 +634,8 @@
                                                     <RowDefinition Height="Auto"/>
                                                     <RowDefinition Height="Auto"/>
                                                     <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="100"/>
@@ -649,8 +651,13 @@
                                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Loc[DataVersion], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DataSchemaVersion}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,8"/>
 
-                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding Loc[Stats], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
-                                                <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding Loc[ReleasesPage], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ReleasesPageUrl}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                                <Button Grid.Row="4" Grid.Column="1" Content="{Binding Loc[CheckUpdates], Mode=OneWay}" Command="{Binding OpenReleasesCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+
+                                                <TextBlock Grid.Row="5" Grid.Column="0" Text="{Binding Loc[Stats], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
+                                                <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Loc[TotalItems], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                                                     <TextBlock Text="{Binding TotalItemsCount}" Foreground="{DynamicResource AccentColorBrush}" FontWeight="Bold" Margin="0,0,15,0"/>
                                                     <TextBlock Text="{Binding Loc[TotalTags], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
