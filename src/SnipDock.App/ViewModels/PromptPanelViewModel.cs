@@ -11,6 +11,7 @@ using SnipDock.Core.Utils;
 using SnipDock.Infrastructure.Storage;
 using SnipDock.App.Services;
 using SnipDock.App.Models;
+using SnipDock.App.Views;
 using System.IO;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
@@ -603,7 +604,7 @@ namespace SnipDock.App.ViewModels
                 var informationalVersion = attribute?.InformationalVersion;
 
                 return string.IsNullOrWhiteSpace(informationalVersion)
-                    ? "v0.2.0"
+                    ? "v0.3.0"
                     : $"v{informationalVersion}";
             }
         }
@@ -972,9 +973,15 @@ namespace SnipDock.App.ViewModels
 
             try
             {
+                var copyText = PrepareTextForCopy(content);
+                if (copyText == null)
+                {
+                    return;
+                }
+
                 try
                 {
-                    Clipboard.SetText(content);
+                    Clipboard.SetText(copyText);
                 }
                 catch (Exception ex)
                 {
@@ -1026,6 +1033,26 @@ namespace SnipDock.App.ViewModels
                 Serilog.Log.Error(ex, "复制失败");
                 ShowErrorToast(string.Format(Loc["CopyFailed"], ex.Message));
             }
+        }
+
+        private string? PrepareTextForCopy(string content)
+        {
+            var variables = TemplateVariableProcessor.ExtractVariables(content);
+            if (variables.Count == 0 || Application.Current == null)
+            {
+                return content;
+            }
+
+            var owner = Application.Current.Windows.OfType<PromptPanelWindow>().FirstOrDefault();
+            if (owner == null)
+            {
+                return content;
+            }
+
+            Serilog.Log.Information("Template variables detected before copy. Count={Count}", variables.Count);
+            return TemplateVariablesWindow.TryShow(owner, content, variables, Loc, out var generatedText)
+                ? generatedText
+                : null;
         }
 
         private async Task OnToggleFavoriteAsync()
