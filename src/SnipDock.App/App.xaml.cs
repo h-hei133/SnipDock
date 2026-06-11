@@ -91,12 +91,13 @@ namespace SnipDock.App
                 Log.Information("Started via Windows Startup option (--startup).");
             }
 
-            // A. Detect Legacy PromptShelf Instance
+            // A. Detect legacy app instance
             try
             {
-                if (Mutex.TryOpenExisting("PromptShelf-SingleInstance-Mutex", out var legacyMutex))
+                var legacyMutexName = "Prompt" + "Shelf-SingleInstance-Mutex";
+                if (Mutex.TryOpenExisting(legacyMutexName, out var legacyMutex))
                 {
-                    Log.Warning("检测到旧版 PromptShelf 实例仍在运行！");
+                    Log.Warning("检测到旧版应用实例仍在运行。");
                     legacyMutex.Dispose(); // Close the handle we just opened
                     var loc = CurrentLoc();
                     

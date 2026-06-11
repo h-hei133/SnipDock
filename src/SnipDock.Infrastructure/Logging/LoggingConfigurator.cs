@@ -76,7 +76,7 @@ namespace SnipDock.Infrastructure.Logging
                 .CreateLogger();
 
             Log.Information("Application logging initialized. Stage 2 started. Storage path: {StoragePath}", storagePath);
-            Log.Information("Product naming migration: Log files renamed from promptshelf to snipdock.");
+            Log.Information("Product naming migration: log file prefix updated to snipdock.");
         }
     }
 }

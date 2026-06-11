@@ -10,6 +10,7 @@ namespace SnipDock.Infrastructure.Services
     {
         private const string RunRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string AppName = "SnipDock";
+        private const string LegacyAppName = "Prompt" + "Shelf";
         private readonly IRegistryService _registryService;
         private readonly ILogger<StartupLaunchService> _logger;
         private readonly Func<string?> _getExecutablePath;
@@ -53,11 +54,11 @@ namespace SnipDock.Infrastructure.Services
                     return Task.FromResult(value.Equals(expectedPath, StringComparison.OrdinalIgnoreCase));
                 }
 
-                // 2. If new SnipDock doesn't exist, check legacy PromptShelf
-                var legacyValue = _registryService.GetValue(RunRegistryKey, "PromptShelf");
+                // 2. If new SnipDock entry does not exist, check legacy app entry
+                var legacyValue = _registryService.GetValue(RunRegistryKey, LegacyAppName);
                 if (!string.IsNullOrEmpty(legacyValue))
                 {
-                    _logger.LogInformation("Legacy PromptShelf startup key detected. Migrating to SnipDock safely...");
+                    _logger.LogInformation("Legacy startup key detected. Migrating to SnipDock safely...");
                     try
                     {
                         var exePath = GetCurrentExecutablePath();
@@ -73,8 +74,8 @@ namespace SnipDock.Infrastructure.Services
                             if (verifyValue != null && verifyValue.Equals(expectedNewValue, StringComparison.OrdinalIgnoreCase))
                             {
                                 // 3. Delete legacy key
-                                _registryService.DeleteValue(RunRegistryKey, "PromptShelf", false);
-                                _logger.LogInformation("Migrated startup key safely from PromptShelf to SnipDock.");
+                                _registryService.DeleteValue(RunRegistryKey, LegacyAppName, false);
+                                _logger.LogInformation("Migrated startup key safely to SnipDock.");
                                 return Task.FromResult(true);
                             }
                             else

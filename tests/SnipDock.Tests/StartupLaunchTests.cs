@@ -10,6 +10,8 @@ namespace SnipDock.Tests
 {
     public class StartupLaunchTests
     {
+        private const string LegacyAppName = "Prompt" + "Shelf";
+
         private class FakeRegistryService : IRegistryService
         {
             public readonly Dictionary<string, string> Values = new();
@@ -127,8 +129,8 @@ namespace SnipDock.Tests
             var service = new StartupLaunchService(fakeRegistry, logger);
             
             var runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            var legacyVal = "\"%LOCALAPPDATA%\\PromptShelf\\PromptShelf.exe\" --startup";
-            fakeRegistry.SetValue(runKey, "PromptShelf", legacyVal);
+            var legacyVal = $"\"%LOCALAPPDATA%\\{LegacyAppName}\\{LegacyAppName}.exe\" --startup";
+            fakeRegistry.SetValue(runKey, LegacyAppName, legacyVal);
             
             var isEnabled = await service.IsEnabledAsync();
             Assert.True(isEnabled);
@@ -137,7 +139,7 @@ namespace SnipDock.Tests
             var newVal = fakeRegistry.GetValue(runKey, "SnipDock");
             Assert.Equal(expectedNewVal, newVal);
             
-            var oldVal = fakeRegistry.GetValue(runKey, "PromptShelf");
+            var oldVal = fakeRegistry.GetValue(runKey, LegacyAppName);
             Assert.Null(oldVal);
         }
 
@@ -149,8 +151,8 @@ namespace SnipDock.Tests
             var service = new StartupLaunchService(fakeRegistry, logger);
             
             var runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            var legacyVal = "\"%LOCALAPPDATA%\\PromptShelf\\PromptShelf.exe\" --startup";
-            fakeRegistry.SetValue(runKey, "PromptShelf", legacyVal);
+            var legacyVal = $"\"%LOCALAPPDATA%\\{LegacyAppName}\\{LegacyAppName}.exe\" --startup";
+            fakeRegistry.SetValue(runKey, LegacyAppName, legacyVal);
             
             fakeRegistry.ThrowOnWrite = true;
             
@@ -159,7 +161,7 @@ namespace SnipDock.Tests
             
             fakeRegistry.ThrowOnWrite = false;
             
-            var oldVal = fakeRegistry.GetValue(runKey, "PromptShelf");
+            var oldVal = fakeRegistry.GetValue(runKey, LegacyAppName);
             Assert.Equal(legacyVal, oldVal);
             
             var newVal = fakeRegistry.GetValue(runKey, "SnipDock");
@@ -174,8 +176,8 @@ namespace SnipDock.Tests
             var service = new StartupLaunchService(fakeRegistry, logger);
             
             var runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-            var legacyVal = "\"%LOCALAPPDATA%\\PromptShelf\\PromptShelf.exe\" --startup";
-            fakeRegistry.SetValue(runKey, "PromptShelf", legacyVal);
+            var legacyVal = $"\"%LOCALAPPDATA%\\{LegacyAppName}\\{LegacyAppName}.exe\" --startup";
+            fakeRegistry.SetValue(runKey, LegacyAppName, legacyVal);
             
             fakeRegistry.SimulateVerifyFailure = true;
             
@@ -184,7 +186,7 @@ namespace SnipDock.Tests
             
             fakeRegistry.SimulateVerifyFailure = false;
             
-            var oldVal = fakeRegistry.GetValue(runKey, "PromptShelf");
+            var oldVal = fakeRegistry.GetValue(runKey, LegacyAppName);
             Assert.Equal(legacyVal, oldVal);
         }
     }

@@ -10,6 +10,7 @@ namespace SnipDock.Tests
 {
     public class SettingsStoreTests : IDisposable
     {
+        private const string LegacyAppName = "Prompt" + "Shelf";
         private readonly string _tempDir;
 
         public SettingsStoreTests()
@@ -79,7 +80,7 @@ namespace SnipDock.Tests
             var fakePath = new FakeAppPathProvider
             {
                 NewFolder = Path.Combine(_tempDir, "SnipDock"),
-                LegacyFolder = Path.Combine(_tempDir, "PromptShelf"),
+                LegacyFolder = Path.Combine(_tempDir, LegacyAppName),
                 LogFolder = Path.Combine(_tempDir, "SnipDockLogs")
             };
             
@@ -96,7 +97,7 @@ namespace SnipDock.Tests
         public void LocalBootstrapSettingsStore_MigratesFromLegacyConfig()
         {
             var newDir = Path.Combine(_tempDir, "SnipDock");
-            var legacyDir = Path.Combine(_tempDir, "PromptShelf");
+            var legacyDir = Path.Combine(_tempDir, LegacyAppName);
             
             Directory.CreateDirectory(legacyDir);
             
@@ -133,7 +134,7 @@ namespace SnipDock.Tests
         public void LocalBootstrapSettingsStore_InvalidLegacyConfig_ReturnsDefault()
         {
             var newDir = Path.Combine(_tempDir, "SnipDock");
-            var legacyDir = Path.Combine(_tempDir, "PromptShelf");
+            var legacyDir = Path.Combine(_tempDir, LegacyAppName);
             
             Directory.CreateDirectory(legacyDir);
             

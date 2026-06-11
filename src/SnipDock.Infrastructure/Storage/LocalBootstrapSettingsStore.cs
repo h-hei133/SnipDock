@@ -35,7 +35,7 @@ namespace SnipDock.Infrastructure.Storage
                     return settings ?? new BootstrapSettings();
                 }
 
-                // 2. If new path doesn't exist, check legacy PromptShelf path
+                // 2. If new path does not exist, check legacy app path
                 if (File.Exists(_legacyFilePath))
                 {
                     try
@@ -53,13 +53,13 @@ namespace SnipDock.Infrastructure.Storage
                             File.WriteAllText(_newFilePath, json);
                             
                             // Log the migration
-                            Serilog.Log.Information("Legacy PromptShelf config detected. Migrated bootstrap config to SnipDock.");
+                            Serilog.Log.Information("Legacy config detected. Migrated bootstrap config to SnipDock.");
                             return settings;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Serilog.Log.Error(ex, "Failed to migrate legacy PromptShelf bootstrap config.");
+                        Serilog.Log.Error(ex, "Failed to migrate legacy bootstrap config.");
                         
                         // Try fallback to just load legacy directly
                         try
