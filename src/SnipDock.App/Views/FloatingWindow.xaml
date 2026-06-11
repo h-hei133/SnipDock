@@ -11,11 +11,10 @@
         Topmost="True">
     
     <Window.Resources>
-        <!-- Modern Theme-Adaptive Context Menu Style -->
         <Style TargetType="ContextMenu">
-            <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentColorBrush}" />
-            <Setter Property="BorderThickness" Value="1.2" />
+            <Setter Property="Background" Value="{DynamicResource ThemeSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -23,8 +22,11 @@
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8"
-                                Padding="4">
+                                CornerRadius="10"
+                                Padding="6">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="18" ShadowDepth="3" Color="#000000" Opacity="0.26"/>
+                            </Border.Effect>
                             <ItemsPresenter />
                         </Border>
                     </ControlTemplate>
@@ -58,11 +60,25 @@
         </Style>
     </Window.Resources>
 
-    <Border x:Name="FloatingBall" CornerRadius="32" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="2" Cursor="SizeAll"
+    <Border x:Name="FloatingBall" CornerRadius="32" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1.5" Cursor="SizeAll"
             Background="{DynamicResource FloatingBallBgBrush}"
             PreviewMouseLeftButtonDown="Border_PreviewMouseLeftButtonDown" 
             PreviewMouseMove="Border_PreviewMouseMove" 
             PreviewMouseLeftButtonUp="Border_PreviewMouseLeftButtonUp">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="3" Color="#000000" Opacity="0.35"/>
+        </Border.Effect>
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Opacity" Value="0.96" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Opacity" Value="1" />
+                        <Setter Property="BorderThickness" Value="2" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         
         <Border.ContextMenu>
             <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
@@ -74,12 +90,13 @@
             </ContextMenu>
         </Border.ContextMenu>
         
-        <Grid>
-            <!-- Make inner TextBlock hit-test invisible so it doesn't consume mouse events -->
-            <TextBlock Text="S" Foreground="#ffffff" FontSize="26" FontWeight="Black" IsHitTestVisible="False"
+        <Grid IsHitTestVisible="False">
+            <Ellipse Margin="7" Stroke="#55FFFFFF" StrokeThickness="1"/>
+            <Border Width="34" Height="34" CornerRadius="12" Background="#22FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock Text="S" Foreground="#ffffff" FontSize="25" FontWeight="Black"
                        HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0">
                 <TextBlock.Effect>
-                    <DropShadowEffect BlurRadius="4" ShadowDepth="1.5" Color="#000000" Opacity="0.5"/>
+                    <DropShadowEffect BlurRadius="5" ShadowDepth="1.2" Color="#000000" Opacity="0.45"/>
                 </TextBlock.Effect>
             </TextBlock>
         </Grid>

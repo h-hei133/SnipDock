@@ -1,36 +1,53 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Light Theme Core Color Palette -->
-    <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="#f9fafb" />
-    <SolidColorBrush x:Key="ThemeCardBackgroundBrush" Color="#ffffff" />
-    <SolidColorBrush x:Key="ThemeBorderBrush" Color="#e5e7eb" />
+    <!-- Light theme palette -->
+    <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="#F7F8FB" />
+    <SolidColorBrush x:Key="ThemeSurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ThemeSurfaceAltBrush" Color="#F3F5F8" />
+    <SolidColorBrush x:Key="ThemeOverlayBrush" Color="#F9FAFC" />
+    <SolidColorBrush x:Key="ThemeCardBackgroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ThemeHeaderBackgroundBrush" Color="#F0F3F7" />
+    <SolidColorBrush x:Key="ThemeInputBgBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ThemeBorderBrush" Color="#DDE3EA" />
+    <SolidColorBrush x:Key="ThemeBorderSubtleBrush" Color="#EDF0F4" />
+    <SolidColorBrush x:Key="ThemeFocusBrush" Color="#2563EB" />
+
     <SolidColorBrush x:Key="ThemeTextPrimaryBrush" Color="#111827" />
-    <SolidColorBrush x:Key="ThemeTextSecondaryBrush" Color="#4b5563" />
-    <SolidColorBrush x:Key="ThemeTextDisabledBrush" Color="#9ca3af" />
-    <SolidColorBrush x:Key="ThemeCardHoverBrush" Color="#f3f4f6" />
-    <SolidColorBrush x:Key="ThemeInputBgBrush" Color="#ffffff" />
-    
-    <!-- ScrollBar Brushes for Light Theme -->
+    <SolidColorBrush x:Key="ThemeTextSecondaryBrush" Color="#4B5563" />
+    <SolidColorBrush x:Key="ThemeTextMutedBrush" Color="#6B7280" />
+    <SolidColorBrush x:Key="ThemeTextDisabledBrush" Color="#9CA3AF" />
+    <SolidColorBrush x:Key="ThemeCardHoverBrush" Color="#F3F6FA" />
+
+    <SolidColorBrush x:Key="ThemeSuccessBrush" Color="#059669" />
+    <SolidColorBrush x:Key="ThemeSuccessBgBrush" Color="#D1FAE5" />
+    <SolidColorBrush x:Key="ThemeWarningBrush" Color="#D97706" />
+    <SolidColorBrush x:Key="ThemeWarningBgBrush" Color="#FEF3C7" />
+    <SolidColorBrush x:Key="ThemeDangerBrush" Color="#DC2626" />
+    <SolidColorBrush x:Key="ThemeDangerHoverBrush" Color="#B91C1C" />
+    <SolidColorBrush x:Key="ThemeDangerBgBrush" Color="#FEE2E2" />
+    <Color x:Key="ThemeShadowColor">#33000000</Color>
+
     <SolidColorBrush x:Key="ThemeScrollBarTrackBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="ThemeScrollBarThumbBrush" Color="#d1d5db" />
-    <SolidColorBrush x:Key="ThemeScrollBarThumbHoverBrush" Color="#9ca3af" />
-    
-    <!-- Dialog Header Background -->
-    <SolidColorBrush x:Key="ThemeHeaderBackgroundBrush" Color="#f3f4f6" />
+    <SolidColorBrush x:Key="ThemeScrollBarThumbBrush" Color="#CBD5E1" />
+    <SolidColorBrush x:Key="ThemeScrollBarThumbHoverBrush" Color="#94A3B8" />
 
-    <!-- Secondary Button Brushes for Light Theme -->
-    <SolidColorBrush x:Key="ThemeSecondaryButtonBgBrush" Color="#e5e7eb" />
-    <SolidColorBrush x:Key="ThemeSecondaryButtonHoverBrush" Color="#d1d5db" />
-    <SolidColorBrush x:Key="ThemeSecondaryButtonPressedBrush" Color="#9ca3af" />
+    <SolidColorBrush x:Key="ThemeSecondaryButtonBgBrush" Color="#E8EDF3" />
+    <SolidColorBrush x:Key="ThemeSecondaryButtonHoverBrush" Color="#DDE5EE" />
+    <SolidColorBrush x:Key="ThemeSecondaryButtonPressedBrush" Color="#C8D3E0" />
 
-    <!-- Type Badges for Light Theme -->
-    <SolidColorBrush x:Key="TypeBadgePromptBg" Color="#f3f4f6" />
-    <SolidColorBrush x:Key="TypeBadgeCommandBg" Color="#dbeafe" />
-    <SolidColorBrush x:Key="TypeBadgeSnippetBg" Color="#d1fae5" />
-    <SolidColorBrush x:Key="TypeBadgeNoteBg" Color="#fef3c7" />
-    
-    <SolidColorBrush x:Key="TypeBadgePromptText" Color="#4b5563" />
-    <SolidColorBrush x:Key="TypeBadgeCommandText" Color="#1e40af" />
-    <SolidColorBrush x:Key="TypeBadgeSnippetText" Color="#065f46" />
-    <SolidColorBrush x:Key="TypeBadgeNoteText" Color="#92400e" />
+    <SolidColorBrush x:Key="MarkdownCodeBgBrush" Color="#F1F5F9" />
+    <SolidColorBrush x:Key="MarkdownCodeBorderBrush" Color="#D6DEE8" />
+    <SolidColorBrush x:Key="MarkdownQuoteBgBrush" Color="#F8FAFC" />
+    <SolidColorBrush x:Key="MarkdownInlineCodeBgBrush" Color="#EEF2F7" />
+    <SolidColorBrush x:Key="MarkdownInlineCodeTextBrush" Color="#BE123C" />
+
+    <SolidColorBrush x:Key="TypeBadgePromptBg" Color="#F1F5F9" />
+    <SolidColorBrush x:Key="TypeBadgeCommandBg" Color="#DBEAFE" />
+    <SolidColorBrush x:Key="TypeBadgeSnippetBg" Color="#D1FAE5" />
+    <SolidColorBrush x:Key="TypeBadgeNoteBg" Color="#FEF3C7" />
+
+    <SolidColorBrush x:Key="TypeBadgePromptText" Color="#475569" />
+    <SolidColorBrush x:Key="TypeBadgeCommandText" Color="#1D4ED8" />
+    <SolidColorBrush x:Key="TypeBadgeSnippetText" Color="#047857" />
+    <SolidColorBrush x:Key="TypeBadgeNoteText" Color="#B45309" />
 </ResourceDictionary>

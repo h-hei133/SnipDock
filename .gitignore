@@ -64,3 +64,6 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 .DS_Store
+
+# Local icon source drafts
+/ui图标.png

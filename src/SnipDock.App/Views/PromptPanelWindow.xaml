@@ -2,13 +2,14 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Loc[WindowTitle], Mode=OneWay}"
-        Height="540" Width="820"
+        Height="600" Width="920"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
         ResizeMode="NoResize"
         ShowInTaskbar="True"
+        Icon="/Resources/Icons/app.ico"
         PreviewKeyDown="Window_PreviewKeyDown">
 
     <Window.Resources>
@@ -22,8 +23,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="CardBorder" Background="{DynamicResource ThemeCardBackgroundBrush}" CornerRadius="8" Padding="12"
-                                BorderThickness="1.5" BorderBrush="Transparent" SnapsToDevicePixels="True">
+                        <Border x:Name="CardBorder" Background="{DynamicResource ThemeSurfaceBrush}" CornerRadius="10" Padding="12"
+                                BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderSubtleBrush}" SnapsToDevicePixels="True">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -34,6 +35,9 @@
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource AccentColorSelectedBgBrush}" />
                                 <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource AccentColorBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource ThemeFocusBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -73,99 +77,46 @@
             </Setter>
         </Style>
 
-        <!-- Settings Buttons secondary style -->
-        <Style x:Key="SettingsNeutralButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource ThemeSecondaryButtonBgBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
-            <Setter Property="Padding" Value="15,7" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ThemeSecondaryButtonHoverBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ThemeSecondaryButtonPressedBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <Style x:Key="SettingsNeutralButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}" />
     </Window.Resources>
 
-    <Border Background="{DynamicResource ThemeBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1.5">
+    <Border Background="{DynamicResource ThemeBackgroundBrush}" CornerRadius="14" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Color="#000000" Opacity="0.22"/>
+        </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="40" />
+                <RowDefinition Height="44" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <!-- Title Bar / Header (Draggable, Rounded Corners clipping fix) -->
-            <Border Grid.Row="0" Background="{DynamicResource ThemeHeaderBackgroundBrush}" CornerRadius="10,10,0,0" MouseDown="TitleBar_MouseDown" SnapsToDevicePixels="True">
+            <Border Grid.Row="0" Background="{DynamicResource ThemeHeaderBackgroundBrush}" CornerRadius="14,14,0,0" MouseDown="TitleBar_MouseDown" SnapsToDevicePixels="True">
                 <Grid>
-                    <TextBlock Text="{Binding Loc[PanelTitle], Mode=OneWay}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="13" FontWeight="Bold"
-                               VerticalAlignment="Center" Margin="15,0,0,0" />
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <Border Width="20" Height="20" CornerRadius="6" Background="{DynamicResource AccentColorBrush}" Margin="0,0,8,0">
+                            <TextBlock Text="S" Foreground="#FFFFFF" FontSize="12" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0"/>
+                        </Border>
+                        <TextBlock Text="{Binding Loc[PanelTitle], Mode=OneWay}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="13.5" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
 
                     <!-- Settings Button (Gear) -->
-                    <Button Content="☰" Command="{Binding ToggleSettingsCommand}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent"
-                            BorderThickness="0" HorizontalAlignment="Right" FontSize="18" Width="40" Height="40" Margin="0,0,40,0" Cursor="Hand" ToolTip="{Binding Loc[SettingsTooltip], Mode=OneWay}">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource AccentColorBrush}"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                    <Button Content="☰" Command="{Binding ToggleSettingsCommand}" Style="{StaticResource IconButtonStyle}"
+                            HorizontalAlignment="Right" FontSize="18" Width="40" Height="40" Margin="0,2,44,2"
+                            ToolTip="{Binding Loc[SettingsTooltip], Mode=OneWay}" />
 
                     <!-- Close Button -->
-                    <Button Content="✕" Click="Close_Click" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Background="Transparent"
-                            BorderThickness="0" HorizontalAlignment="Right" FontSize="14" Width="40" Height="40" Cursor="Hand">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#ef4444"/>
-                                        <Setter Property="Foreground" Value="#ffffff"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                    <Button Content="✕" Click="Close_Click" Style="{StaticResource CloseIconButtonStyle}"
+                            HorizontalAlignment="Right" FontSize="13" Width="40" Height="40" Margin="0,2,4,2"
+                            ToolTip="{Binding Loc[Close], Mode=OneWay}" />
                 </Grid>
             </Border>
 
             <!-- Main Panel Content -->
-            <Grid Grid.Row="1" Margin="15">
+            <Grid Grid.Row="1" Margin="16">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="320" /> <!-- List / Search Column -->
+                    <ColumnDefinition Width="335" /> <!-- List / Search Column -->
                     <ColumnDefinition Width="Auto" /> <!-- Splitter -->
                     <ColumnDefinition Width="*" />   <!-- Display / Editor / Settings Column -->
                 </Grid.ColumnDefinitions>
@@ -182,7 +133,8 @@
 
                     <!-- Search Input (uses modern global TextBox style) -->
                     <TextBox x:Name="SearchTextBox" Grid.Row="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             VerticalContentAlignment="Center" Margin="0,0,0,8" Padding="10,7" Height="36"/>
+                             VerticalContentAlignment="Center" Margin="0,0,0,10" Padding="12,8" Height="38"
+                             ToolTip="{Binding Loc[SearchPlaceholder], Mode=OneWay}" />
 
                     <!-- Filters Row: Type Filter & Tag Filter in two columns -->
                     <Grid Grid.Row="1" Margin="0,0,0,8">
@@ -222,62 +174,32 @@
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="0" Content="{Binding Loc[AddItem], Mode=OneWay}" Command="{Binding AddCommand}"
-                                Background="{DynamicResource AccentColorBrush}" Foreground="#ffffff" BorderThickness="0" Padding="0,8"
-                                FontWeight="Bold" FontSize="12" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="{x:Type Border}">
-                                    <Setter Property="CornerRadius" Value="6" />
-                                </Style>
-                            </Button.Resources>
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource AccentColorBrushMouseOver}"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Style="{StaticResource PrimaryButtonStyle}" Padding="0,8" FontSize="12"
+                                ToolTip="{Binding Loc[AddItem], Mode=OneWay}" />
 
                         <Button Grid.Column="2" Content="{Binding Loc[AddFromClipboard], Mode=OneWay}" Command="{Binding AddFromClipboardCommand}"
-                                Background="{DynamicResource ThemeSecondaryButtonBgBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0" Padding="0,8"
-                                FontWeight="Bold" FontSize="12" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="{x:Type Border}">
-                                    <Setter Property="CornerRadius" Value="6" />
-                                </Style>
-                            </Button.Resources>
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource ThemeSecondaryButtonHoverBrush}"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Style="{StaticResource SecondaryButtonStyle}" Padding="0,8" FontSize="12"
+                                ToolTip="{Binding Loc[AddFromClipboard], Mode=OneWay}" />
                     </Grid>
 
                     <!-- Batch Actions -->
-                    <Border Grid.Row="3" Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10"
+                    <Border Grid.Row="3" Style="{StaticResource SettingsSectionStyle}" Padding="10" Margin="0,0,0,10"
                             Visibility="{Binding HasBatchSelection, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
                             <TextBlock Text="{Binding BatchSelectionSummary}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
                             <WrapPanel>
                                 <TextBox Text="{Binding BatchTagText, UpdateSourceTrigger=PropertyChanged}" Width="105" Height="28" Padding="6,3" Margin="0,0,6,6"/>
-                                <Button Content="{Binding Loc[BatchAddTag], Mode=OneWay}" Command="{Binding BatchAddTagCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
+                                <Button Content="{Binding Loc[BatchAddTag], Mode=OneWay}" Command="{Binding BatchAddTagCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6" ToolTip="{Binding Loc[BatchAddTag], Mode=OneWay}"/>
                                 <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding BatchItemType, UpdateSourceTrigger=PropertyChanged}" Width="82" Height="28" Margin="0,0,6,6">
                                     <ComboBoxItem Content="Prompt" Tag="Prompt"/>
                                     <ComboBoxItem Content="{Binding Loc[Command], Mode=OneWay}" Tag="Command"/>
                                     <ComboBoxItem Content="{Binding Loc[Snippet], Mode=OneWay}" Tag="Snippet"/>
                                     <ComboBoxItem Content="{Binding Loc[Note], Mode=OneWay}" Tag="Note"/>
                                 </ComboBox>
-                                <Button Content="{Binding Loc[BatchSetType], Mode=OneWay}" Command="{Binding BatchSetTypeCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
-                                <Button Content="{Binding Loc[BatchFavorite], Mode=OneWay}" Command="{Binding BatchFavoriteCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
-                                <Button Content="{Binding Loc[BatchPin], Mode=OneWay}" Command="{Binding BatchPinCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6"/>
-                                <Button Content="{Binding Loc[BatchDelete], Mode=OneWay}" Command="{Binding BatchDeleteCommand}" Background="#b91c1c" Foreground="#ffffff" BorderThickness="0" Padding="8,4" FontSize="11" Margin="0,0,0,6"/>
+                                <Button Content="{Binding Loc[BatchSetType], Mode=OneWay}" Command="{Binding BatchSetTypeCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6" ToolTip="{Binding Loc[BatchSetType], Mode=OneWay}"/>
+                                <Button Content="{Binding Loc[BatchFavorite], Mode=OneWay}" Command="{Binding BatchFavoriteCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6" ToolTip="{Binding Loc[BatchFavorite], Mode=OneWay}"/>
+                                <Button Content="{Binding Loc[BatchPin], Mode=OneWay}" Command="{Binding BatchPinCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,6,6" ToolTip="{Binding Loc[BatchPin], Mode=OneWay}"/>
+                                <Button Content="{Binding Loc[BatchDelete], Mode=OneWay}" Command="{Binding BatchDeleteCommand}" Style="{StaticResource DangerButtonStyle}" Padding="8,4" FontSize="11" Margin="0,0,0,6" ToolTip="{Binding Loc[BatchDelete], Mode=OneWay}"/>
                             </WrapPanel>
                         </StackPanel>
                     </Border>
@@ -318,9 +240,9 @@
                                                        Visibility="{Binding IsFavorite, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
                                             <!-- Type Badge -->
-                                            <Border CornerRadius="3" Padding="5,1.5" VerticalAlignment="Center">
+                                            <Border Padding="6,1.5" VerticalAlignment="Center">
                                                 <Border.Style>
-                                                    <Style TargetType="Border">
+                                                    <Style TargetType="Border" BasedOn="{StaticResource TypeBadgeStyle}">
                                                         <Setter Property="Background" Value="{DynamicResource TypeBadgePromptBg}" />
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding ItemType}" Value="Command">
@@ -373,7 +295,7 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Background="{DynamicResource ThemeSecondaryButtonBgBrush}" CornerRadius="4" Padding="6,2" Margin="0,0,5,3">
+                                                <Border Style="{StaticResource PillBadgeStyle}">
                                                     <TextBlock Text="{Binding}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="10"/>
                                                 </Border>
                                             </DataTemplate>
@@ -398,7 +320,9 @@
                     <!-- 1. EMPTY STATE VIEW -->
                     <Grid x:Name="EmptyStateView" Visibility="{Binding IsEmptyStateVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="📁" FontSize="48" Foreground="{DynamicResource ThemeTextDisabledBrush}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                            <Border Width="58" Height="58" CornerRadius="18" Background="{DynamicResource ThemeSurfaceAltBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" HorizontalAlignment="Center" Margin="0,0,0,16">
+                                <TextBlock Text="S" FontSize="30" FontWeight="Black" Foreground="{DynamicResource AccentColorTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
+                            </Border>
                             <TextBlock Text="{Binding Loc[EmptyStateTitle], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="14" HorizontalAlignment="Center"/>
                             <TextBlock Text="{Binding Loc[EmptyStateHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="11.5" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                         </StackPanel>
@@ -419,12 +343,12 @@
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="0,0,10,0">
                                 <!-- Name -->
-                                <TextBlock Text="{Binding Loc[ItemName], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding Loc[ItemName], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding EditingName, UpdateSourceTrigger=PropertyChanged}"
                                          Margin="0,0,0,15" Padding="10,6" Height="36" />
 
                                 <!-- Item Type Selection -->
-                                <TextBlock Text="{Binding Loc[TypeFilterLabel], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding Loc[TypeFilterLabel], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
                                 <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding EditingItemType, UpdateSourceTrigger=PropertyChanged}"
                                           Margin="0,0,0,15" Height="34" VerticalContentAlignment="Center">
                                     <ComboBoxItem Content="Prompt" Tag="Prompt"/>
@@ -434,7 +358,7 @@
                                 </ComboBox>
 
                                 <!-- Tags separated by commas/semicolons -->
-                                <TextBlock Text="{Binding Loc[Tags], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding Loc[Tags], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding EditingTagsText, UpdateSourceTrigger=PropertyChanged}"
                                          Margin="0,0,0,5" Padding="10,6" Height="36" />
                                 <TextBlock Text="{Binding Loc[AiAssistNotice], Mode=OneWay}"
@@ -442,16 +366,16 @@
 
                                 <!-- Content -->
                                 <Grid Margin="0,0,0,5">
-                                    <TextBlock Text="{Binding Loc[ItemContent], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" VerticalAlignment="Center"/>
-                                    <Button Content="{Binding Loc[MarkdownPreview], Mode=OneWay}" Command="{Binding ToggleEditorMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsEditorMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                    <Button Content="{Binding Loc[MarkdownSource], Mode=OneWay}" Command="{Binding ToggleEditorMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsEditorMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock Text="{Binding Loc[ItemContent], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <Button Content="{Binding Loc[MarkdownPreview], Mode=OneWay}" Command="{Binding ToggleEditorMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="10,4" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsEditorMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="{Binding Loc[MarkdownPreview], Mode=OneWay}" />
+                                    <Button Content="{Binding Loc[MarkdownSource], Mode=OneWay}" Command="{Binding ToggleEditorMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="10,4" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsEditorMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="{Binding Loc[MarkdownSource], Mode=OneWay}" />
                                 </Grid>
                                 <Grid Height="185">
                                     <TextBox Text="{Binding EditingContent, UpdateSourceTrigger=PropertyChanged}"
                                              AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap"
                                              Padding="10" ScrollViewer.VerticalScrollBarVisibility="Auto"
                                              Visibility="{Binding IsEditorMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                    <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8"
+                                    <Border Style="{StaticResource PanelCardStyle}" Padding="0"
                                             Visibility="{Binding IsEditorMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <FlowDocumentScrollViewer Document="{Binding EditorMarkdownPreviewDocument}" Padding="10" VerticalScrollBarVisibility="Auto" />
                                     </Border>
@@ -466,40 +390,10 @@
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <Button Content="{Binding Loc[Cancel], Mode=OneWay}" Command="{Binding CancelEditCommand}"
-                                        Background="{DynamicResource ThemeSecondaryButtonBgBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0" Padding="20,7" Margin="0,0,10,0" Cursor="Hand">
-                                    <Button.Resources>
-                                        <Style TargetType="{x:Type Border}">
-                                            <Setter Property="CornerRadius" Value="6" />
-                                        </Style>
-                                    </Button.Resources>
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource ThemeSecondaryButtonHoverBrush}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="20,7" Margin="0,0,10,0" ToolTip="Esc" />
 
                                 <Button Content="{Binding Loc[Save], Mode=OneWay}" Command="{Binding SavePromptCommand}"
-                                        Background="{DynamicResource AccentColorBrush}" Foreground="#ffffff" BorderThickness="0" Padding="20,7" FontWeight="Bold" Cursor="Hand">
-                                    <Button.Resources>
-                                        <Style TargetType="{x:Type Border}">
-                                            <Setter Property="CornerRadius" Value="6" />
-                                        </Style>
-                                    </Button.Resources>
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource AccentColorBrushMouseOver}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                                        Style="{StaticResource PrimaryButtonStyle}" Padding="20,7" ToolTip="Ctrl+S" />
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -549,7 +443,7 @@
 
                                         <!-- Section 3: Behavioral Preferences -->
                                         <TextBlock Text="{Binding Loc[Behavior], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
-                                        <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                                        <Border Style="{StaticResource SettingsSectionStyle}" Margin="0,0,0,15">
                                             <StackPanel>
                                                 <CheckBox Content="{Binding Loc[FocusSearch], Mode=OneWay}" IsChecked="{Binding FocusSearchOnOpen}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,10" Cursor="Hand"/>
                                                 <CheckBox Content="{Binding Loc[SelectSearch], Mode=OneWay}" IsChecked="{Binding SelectSearchTextOnOpen}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,10" Cursor="Hand" IsEnabled="{Binding FocusSearchOnOpen}"/>
@@ -563,13 +457,18 @@
 
                                         <!-- Section 4: Resident & Startup -->
                                         <TextBlock Text="{Binding Loc[StartupSection], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,5,0,10"/>
-                                        <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                                        <Border Style="{StaticResource SettingsSectionStyle}" Margin="0,0,0,20">
                                             <StackPanel>
                                                 <StackPanel Margin="0,0,0,10">
                                                     <CheckBox Content="{Binding Loc[StartupEnabled], Mode=OneWay}" IsChecked="{Binding IsStartupEnabled}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Cursor="Hand"/>
                                                     <TextBlock Text="{Binding Loc[StartupHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" Margin="20,4,0,0" TextWrapping="Wrap"/>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Loc[StartupDevHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextDisabledBrush}" FontSize="10.5" TextWrapping="Wrap"/>
+                                                <Border Background="{DynamicResource ThemeWarningBgBrush}" BorderBrush="{DynamicResource ThemeWarningBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,4,0,0">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="!" Foreground="{DynamicResource ThemeWarningBrush}" FontWeight="Bold" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Top"/>
+                                                        <TextBlock Text="{Binding Loc[StartupDevHint], Mode=OneWay}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="10.5" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -582,7 +481,7 @@
                                     <StackPanel Margin="0,0,10,0">
                                         <!-- Section 1: Storage directory -->
                                         <TextBlock Text="{Binding Loc[DataManagement], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,10,0,10"/>
-                                        <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                                        <Border Style="{StaticResource SettingsSectionStyle}" Margin="0,0,0,15">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding CurrentStoragePath}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,12" />
                                                 <WrapPanel>
@@ -597,7 +496,7 @@
 
                                         <!-- Section 2: Data migration -->
                                         <TextBlock Text="{Binding Loc[ImportExport], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="12.5" FontWeight="Bold" Margin="0,5,0,10"/>
-                                        <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                                        <Border Style="{StaticResource SettingsSectionStyle}" Margin="0,0,0,20">
                                             <StackPanel>
                                                 <WrapPanel Margin="0,0,0,12">
                                                     <Button Content="{Binding Loc[ExportJson], Mode=OneWay}" Command="{Binding ExportDataCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Margin="0,0,10,0" />
@@ -623,7 +522,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Left: Scrollable list of tags -->
-                                    <Border Grid.Column="0" Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="5">
+                                    <Border Grid.Column="0" Style="{StaticResource SettingsSectionStyle}" Padding="5">
                                         <ListBox ItemsSource="{Binding TagSummaries}" SelectedItem="{Binding SelectedTagSummary}" Background="Transparent" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
@@ -665,7 +564,7 @@
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="0,10,10,0">
                                         <TextBlock Text="{Binding Loc[AboutSnipDock], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,0,0,15"/>
-                                        <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                                        <Border Style="{StaticResource SettingsSectionStyle}" Margin="0,0,0,15">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto"/>
@@ -676,23 +575,21 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="86"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Loc[AppName], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="SnipDock" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontWeight="Bold" Margin="0,0,0,8"/>
+                                                <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Source="/Resources/Icons/logo.png" Width="54" Height="54" Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,16,0"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="SnipDock" Foreground="{DynamicResource ThemeTextPrimaryBrush}" FontSize="18" FontWeight="Bold" Margin="0,0,0,4"/>
 
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Loc[Version], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AppVersion}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AppVersion}" Foreground="{DynamicResource AccentColorTextBrush}" FontWeight="SemiBold" Margin="0,0,0,8"/>
 
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Loc[DataVersion], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
-                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DataSchemaVersion}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,8"/>
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Loc[AboutSnipDock], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
 
                                                 <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding Loc[ReleasesPage], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" Margin="0,0,0,8"/>
                                                 <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ReleasesPageUrl}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
-                                                <Button Grid.Row="4" Grid.Column="1" Content="{Binding Loc[CheckUpdates], Mode=OneWay}" Command="{Binding OpenReleasesCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                                                <Button Grid.Row="4" Grid.Column="1" Content="{Binding Loc[CheckUpdates], Mode=OneWay}" Command="{Binding OpenReleasesCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" HorizontalAlignment="Left" Margin="0,0,0,8" ToolTip="{Binding Loc[ReleasesPage], Mode=OneWay}"/>
 
                                                 <TextBlock Grid.Row="5" Grid.Column="0" Text="{Binding Loc[Stats], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}"/>
                                                 <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
@@ -705,7 +602,7 @@
                                         </Border>
 
                                         <TextBlock Text="{Binding Loc[SystemPaths], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="13" FontWeight="Bold" Margin="0,5,0,10"/>
-                                        <Border Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1.2" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                                        <Border Style="{StaticResource SettingsSectionStyle}" Margin="0,0,0,20">
                                             <StackPanel>
                                                 <!-- Data Path -->
                                                 <TextBlock Text="{Binding Loc[StoragePath], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" Margin="0,0,0,2"/>
@@ -825,9 +722,9 @@
                             <!-- Type and Tags Row -->
                             <WrapPanel VerticalAlignment="Center" Margin="0,0,0,8">
                                 <!-- Type Badge -->
-                                <Border CornerRadius="4" Padding="7,2.5" Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Border Padding="7,2.5" Margin="0,0,10,0" VerticalAlignment="Center">
                                     <Border.Style>
-                                        <Style TargetType="Border">
+                                        <Style TargetType="Border" BasedOn="{StaticResource TypeBadgeStyle}">
                                             <Setter Property="Background" Value="{DynamicResource TypeBadgePromptBg}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding SelectedPrompt.ItemType}" Value="Command">
@@ -878,7 +775,7 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="{DynamicResource AccentColorSelectedBgBrush}" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                            <Border Style="{StaticResource PillBadgeStyle}" Background="{DynamicResource AccentColorSelectedBgBrush}" BorderBrush="{DynamicResource AccentColorBrush}">
                                                 <TextBlock Text="{Binding}" Foreground="{DynamicResource AccentColorTextBrush}" FontSize="10.5"/>
                                             </Border>
                                         </DataTemplate>
@@ -916,11 +813,11 @@
 
                             <Grid Grid.Row="0" Margin="0,0,0,6">
                                 <TextBlock Text="{Binding Loc[ItemContent], Mode=OneWay}" Foreground="{DynamicResource ThemeTextSecondaryBrush}" FontSize="11" VerticalAlignment="Center"/>
-                                <Button Content="{Binding Loc[MarkdownPreview], Mode=OneWay}" Command="{Binding ToggleMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                <Button Content="{Binding Loc[MarkdownSource], Mode=OneWay}" Command="{Binding ToggleMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="9,3" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <Button Content="{Binding Loc[MarkdownPreview], Mode=OneWay}" Command="{Binding ToggleMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="10,4" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="{Binding Loc[MarkdownPreview], Mode=OneWay}" />
+                                <Button Content="{Binding Loc[MarkdownSource], Mode=OneWay}" Command="{Binding ToggleMarkdownPreviewCommand}" Style="{StaticResource SettingsNeutralButtonStyle}" Padding="10,4" FontSize="11" HorizontalAlignment="Right" Visibility="{Binding IsMarkdownPreviewEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="{Binding Loc[MarkdownSource], Mode=OneWay}" />
                             </Grid>
 
-                            <Border Grid.Row="1" Background="{DynamicResource ThemeHeaderBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" CornerRadius="8">
+                            <Border Grid.Row="1" Style="{StaticResource PanelCardStyle}" Padding="0">
                                 <Grid>
                                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12" Visibility="{Binding IsMarkdownSourceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <!-- Style={x:Null} isolates from TextBox global triggers, keeping text selectable and theme-adaptive -->
@@ -937,60 +834,18 @@
                         <Grid Grid.Row="3" Margin="0,15,0,0">
                             <!-- Left: Copy action -->
                             <Button Content="{Binding Loc[CopyContent], Mode=OneWay}" Command="{Binding CopyContentCommand}" CommandParameter="{Binding SelectedPrompt.Content}"
-                                    Background="{DynamicResource AccentColorBrush}" Foreground="#ffffff" BorderThickness="0" Padding="22,9" FontWeight="Bold" FontSize="12.5" HorizontalAlignment="Left" Cursor="Hand">
-                                <Button.Resources>
-                                    <Style TargetType="{x:Type Border}">
-                                        <Setter Property="CornerRadius" Value="6" />
-                                    </Style>
-                                </Button.Resources>
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="{DynamicResource AccentColorBrushMouseOver}"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
+                                    Style="{StaticResource PrimaryButtonStyle}" Padding="22,9" FontSize="12.5" HorizontalAlignment="Left"
+                                    ToolTip="{Binding Loc[CopyContent], Mode=OneWay}" />
 
                             <!-- Right: Edit / Delete actions -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <Button Content="{Binding Loc[Edit], Mode=OneWay}" Command="{Binding EditCommand}" CommandParameter="{Binding SelectedPrompt}"
-                                        Background="{DynamicResource ThemeSecondaryButtonBgBrush}" Foreground="{DynamicResource ThemeTextPrimaryBrush}" BorderThickness="0" Padding="18,8" Margin="0,0,10,0" Cursor="Hand">
-                                    <Button.Resources>
-                                        <Style TargetType="{x:Type Border}">
-                                            <Setter Property="CornerRadius" Value="6" />
-                                        </Style>
-                                    </Button.Resources>
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource ThemeSecondaryButtonHoverBrush}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                                        Style="{StaticResource SecondaryButtonStyle}" Padding="18,8" Margin="0,0,10,0"
+                                        ToolTip="{Binding Loc[Edit], Mode=OneWay}" />
 
                                 <Button Content="{Binding Loc[Delete], Mode=OneWay}" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedPrompt}"
-                                        Background="#b91c1c" Foreground="#ffffff" BorderThickness="0" Padding="18,8" Cursor="Hand">
-                                    <Button.Resources>
-                                        <Style TargetType="{x:Type Border}">
-                                            <Setter Property="CornerRadius" Value="6" />
-                                        </Style>
-                                    </Button.Resources>
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#ef4444"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                                        Style="{StaticResource DangerButtonStyle}" Padding="18,8"
+                                        ToolTip="{Binding Loc[Delete], Mode=OneWay}" />
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -999,24 +854,20 @@
 
             <!-- Toast notification panel overlay -->
             <Border x:Name="ToastBorder" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,20,0"
-                    Padding="14,9" CornerRadius="8" BorderThickness="1.5" Panel.ZIndex="999" SnapsToDevicePixels="True"
-                    MaxWidth="320" IsHitTestVisible="False"
+                    Panel.ZIndex="999"
                     Visibility="{Binding IsToastVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <!-- Trigger border colors dynamically -->
                 <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Background" Value="{DynamicResource ThemeCardBackgroundBrush}" />
+                    <Style TargetType="Border" BasedOn="{StaticResource ToastStyle}">
+                        <Setter Property="Background" Value="{DynamicResource ThemeSurfaceBrush}" />
                         <Setter Property="BorderBrush" Value="{DynamicResource AccentColorBrush}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsToastSuccess}" Value="False">
-                                <Setter Property="BorderBrush" Value="#ef4444" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource ThemeDangerBrush}" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Color="#000000" Opacity="0.3"/>
-                </Border.Effect>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Icon -->
                     <TextBlock Text="✓" Foreground="{DynamicResource AccentColorTextBrush}" FontWeight="Bold" FontSize="14.5" Margin="0,0,8,0" VerticalAlignment="Center">
@@ -1025,7 +876,7 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsToastSuccess}" Value="False">
                                         <Setter Property="Text" Value="!" />
-                                        <Setter Property="Foreground" Value="#ef4444" />
+                                        <Setter Property="Foreground" Value="{DynamicResource ThemeDangerBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

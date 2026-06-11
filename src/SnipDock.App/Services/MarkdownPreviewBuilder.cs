@@ -13,11 +13,11 @@ namespace SnipDock.App.Services
             var document = new FlowDocument
             {
                 PagePadding = new Thickness(0),
-                FontSize = 12.5,
-                FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
-                LineHeight = 20
+                FontSize = 13,
+                LineHeight = 21
             };
             document.SetResourceReference(TextElement.ForegroundProperty, "ThemeTextPrimaryBrush");
+            document.SetResourceReference(TextElement.FontFamilyProperty, "ThemeUIFontFamily");
 
             var lines = (markdown ?? string.Empty).Replace("\r\n", "\n").Split('\n');
             var index = 0;
@@ -97,12 +97,12 @@ namespace SnipDock.App.Services
             var border = new Border
             {
                 Child = text,
-                CornerRadius = new CornerRadius(6),
+                CornerRadius = new CornerRadius(8),
                 BorderThickness = new Thickness(1),
-                Margin = new Thickness(0, 4, 0, 10)
+                Margin = new Thickness(0, 5, 0, 12)
             };
-            border.SetResourceReference(Border.BackgroundProperty, "ThemeHeaderBackgroundBrush");
-            border.SetResourceReference(Border.BorderBrushProperty, "ThemeBorderBrush");
+            border.SetResourceReference(Border.BackgroundProperty, "MarkdownCodeBgBrush");
+            border.SetResourceReference(Border.BorderBrushProperty, "MarkdownCodeBorderBrush");
 
             document.Blocks.Add(new BlockUIContainer(border));
             return index < lines.Length ? index + 1 : index;
@@ -119,17 +119,18 @@ namespace SnipDock.App.Services
             }
 
             var paragraph = CreateParagraph(quote.ToString());
-            paragraph.Margin = new Thickness(10, 4, 0, 10);
+            paragraph.Margin = new Thickness(8, 5, 0, 12);
             paragraph.BorderThickness = new Thickness(3, 0, 0, 0);
-            paragraph.Padding = new Thickness(10, 0, 0, 0);
+            paragraph.Padding = new Thickness(12, 6, 0, 6);
             paragraph.SetResourceReference(Block.BorderBrushProperty, "AccentColorBrush");
+            paragraph.SetResourceReference(TextElement.BackgroundProperty, "MarkdownQuoteBgBrush");
             document.Blocks.Add(paragraph);
             return index;
         }
 
         private static int AddList(FlowDocument document, string[] lines, int index)
         {
-            var list = new List { MarkerStyle = TextMarkerStyle.Disc, Margin = new Thickness(18, 4, 0, 10) };
+            var list = new List { MarkerStyle = TextMarkerStyle.Disc, Margin = new Thickness(20, 5, 0, 12), Padding = new Thickness(0) };
             while (index < lines.Length && IsListItem(lines[index].Trim()))
             {
                 var text = lines[index].Trim()[2..].Trim();
@@ -186,20 +187,62 @@ namespace SnipDock.App.Services
             {
                 1 => 22,
                 2 => 18,
-                3 => 15,
+                3 => 15.5,
                 _ => 13.5
             };
-            paragraph.Margin = new Thickness(0, 0, 0, 10);
+            paragraph.Margin = level == 1 ? new Thickness(0, 0, 0, 12) : new Thickness(0, 4, 0, 10);
             document.Blocks.Add(paragraph);
             return true;
         }
 
         private static Paragraph CreateParagraph(string text)
         {
-            var paragraph = new Paragraph { Margin = new Thickness(0, 0, 0, 10) };
+            var paragraph = new Paragraph { Margin = new Thickness(0, 0, 0, 11) };
             paragraph.SetResourceReference(TextElement.ForegroundProperty, "ThemeTextPrimaryBrush");
-            paragraph.Inlines.Add(new Run(text));
+            AddInlineRuns(paragraph, text);
             return paragraph;
+        }
+
+        private static void AddInlineRuns(Paragraph paragraph, string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                paragraph.Inlines.Add(new Run(string.Empty));
+                return;
+            }
+
+            var index = 0;
+            while (index < text.Length)
+            {
+                var start = text.IndexOf('`', index);
+                if (start < 0)
+                {
+                    paragraph.Inlines.Add(new Run(text[index..]));
+                    break;
+                }
+
+                if (start > index)
+                {
+                    paragraph.Inlines.Add(new Run(text[index..start]));
+                }
+
+                var end = text.IndexOf('`', start + 1);
+                if (end < 0)
+                {
+                    paragraph.Inlines.Add(new Run(text[start..]));
+                    break;
+                }
+
+                var code = new Run(text[(start + 1)..end])
+                {
+                    FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+                    FontSize = 12.5
+                };
+                code.SetResourceReference(TextElement.ForegroundProperty, "MarkdownInlineCodeTextBrush");
+                code.SetResourceReference(TextElement.BackgroundProperty, "MarkdownInlineCodeBgBrush");
+                paragraph.Inlines.Add(code);
+                index = end + 1;
+            }
         }
 
         private static BlockUIContainer CreateRule()

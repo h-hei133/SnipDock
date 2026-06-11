@@ -1,5 +1,5 @@
 #define MyAppName "SnipDock"
-#define MyAppVersion "0.5.0"
+#define MyAppVersion "0.5.1"
 #define MyAppPublisher "SnipDock"
 #define MyAppExeName "SnipDock.App.exe"
 #define MyAppSourceDir "..\publish\SnipDock"
@@ -22,6 +22,7 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 UninstallDisplayName={#MyAppName}
+SetupIconFile=..\src\SnipDock.App\Resources\Icons\app.ico
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 
